@@ -88,3 +88,5 @@ Este documento lista todas as user stories (GH-001 a GH-050), agrupadas por épi
 ## Script de criação (gh CLI)
 
 Arquivo gerado: `scripts/create_github_issues.ps1` com comandos para cada issue. Edite a variável `$Repo` antes de executar.
+
+gh issue create --repo romanzini/esalao_app.git --title "GH-001 Cadastro de cliente" --body-file ".\\issues\\GH-001-cadastro-cliente.md" --label "feature,auth,backend"

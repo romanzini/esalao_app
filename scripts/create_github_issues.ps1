@@ -1,36 +1,162 @@
+<#+
+.SYNOPSIS
+    Cria issues no GitHub a partir dos arquivos em /issues com metadados.
+
+.DESCRIPTION
+    Descobre todos arquivos GH-*.md em /issues, lê bloco HTML de metadados (ID, Epic, Phase),
+    compõe labels: labels base do arquivo + auto-import + epic:<slug> + phase:<n>.
+    Suporta DryRun para visualização, skip se issue já existe (opcional via flag).
+
+.EXAMPLE
+    pwsh ./scripts/create_github_issues.ps1 -Repo org/projeto -DryRun
+
+.EXAMPLE
+    pwsh ./scripts/create_github_issues.ps1 -Repo org/projeto -IncludeFilter "GH-0(0[1-5]|1[0-2])"
+
+#>
 Param(
-    [string]$Repo = "<owner>/<repo>"
+    [Parameter(Mandatory=$true)][string]$Repo,
+    [switch]$DryRun,
+    [string]$IncludeFilter,
+    [switch]$SkipExisting
 )
 
-if ($Repo -eq "<owner>/<repo>") {
-    Write-Host "Defina o parâmetro -Repo (ex.: org/esalao_app) antes de executar." -ForegroundColor Yellow
+# Sanitização preventiva do -Repo (remove barras/aspas acidentais nas extremidades)
+function Remove-EdgeChars {
+    param([string]$value)
+    if (-not $value) { return $value }
+    $chars = @('\\','/','"', "'")
+    $changed = $true
+    while ($changed) {
+        $changed = $false
+        foreach ($c in $chars) {
+            if ($value.StartsWith($c)) { $value = $value.Substring(1); $changed = $true }
+            if ($value.EndsWith($c)) { $value = $value.Substring(0, $value.Length-1); $changed = $true }
+        }
+    }
+    return $value
+}
+$originalRepo = $Repo
+$Repo = Remove-EdgeChars -value $Repo
+if ($Repo -ne $originalRepo) { Write-Host "[AVISO] -Repo sanitizado de '$originalRepo' para '$Repo'" -ForegroundColor Yellow }
+
+if ([string]::IsNullOrWhiteSpace($Repo) -or $Repo -like '*<owner>*') {
+    Write-Host "Forneça -Repo ex.: org/esalao_app" -ForegroundColor Yellow; return }
+
+if ($Repo -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') {
+    Write-Host "[ERRO] Valor de -Repo invalido: '$Repo'. Use o formato owner/repo (ex: romanzini/esalao_app)." -ForegroundColor Red
     return
 }
 
-$basePath = Join-Path $PSScriptRoot "..\issues"
-
-$issues = @(
-    'GH-001-cadastro-cliente.md','GH-002-login-autenticacao.md','GH-003-recuperacao-senha.md','GH-004-cadastro-unidade.md','GH-005-cadastro-profissional.md',
-    'GH-006-config-catalogo-servicos.md','GH-007-ajuste-disponibilidade-profissional.md','GH-008-buscar-slots.md','GH-009-reservar-servico.md','GH-010-politica-cancelamento.md',
-    'GH-011-marcar-no-show.md','GH-012-fila-espera.md','GH-013-overbooking-controlado.md','GH-014-pagamento-pix-cartao.md','GH-015-reembolso.md',
-    'GH-016-notificacoes-lembrete.md','GH-017-avaliar-servico.md','GH-018-moderacao-avaliacoes.md','GH-019-relatorios-operacionais.md','GH-020-relatorios-plataforma.md',
-    'GH-021-comissao-profissional.md','GH-022-fidelidade-pontos.md','GH-023-resgate-pontos.md','GH-024-gestao-usuarios-permissoes.md','GH-025-auditoria-eventos.md',
-    'GH-026-rate-limiting-login.md','GH-027-anonimizacao-dados.md','GH-028-reagendar-reserva.md','GH-029-pacote-multi-servico.md','GH-030-notificacao-fila-espera.md',
-    'GH-031-exportacao-relatorios-csv.md','GH-032-bloqueio-no-shows.md','GH-033-logs-pagamento.md','GH-034-busca-avaliacoes.md','GH-035-filtro-preco-avaliacao.md',
-    'GH-036-agenda-propria-profissional.md','GH-037-agenda-global-unidade.md','GH-038-config-politica-cancelamento.md','GH-039-definir-comissoes.md','GH-040-painel-desempenho-profissional.md',
-    'GH-041-sessao-logout-seguro.md','GH-042-pesquisa-localizacao.md','GH-043-ajustar-status-reserva.md','GH-044-historico-reservas-cliente.md','GH-045-monitoramento-erros.md',
-    'GH-046-exportar-dados-pessoais.md','GH-047-atualizar-dados-salao.md','GH-048-desconto-promocional.md','GH-049-cancelamento-recepcao.md','GH-050-visualizar-fila-espera.md'
-)
-
-foreach ($file in $issues) {
-    $path = Join-Path $basePath $file
-    if (-Not (Test-Path $path)) { Write-Warning "Arquivo não encontrado: $path"; continue }
-    $id = ($file -split '-')[0]
-    $titleLine = (Get-Content $path | Select-String -Pattern "^# ") | Select-Object -First 1
-    if ($null -eq $titleLine) { Write-Warning "Título não encontrado em $file"; continue }
-    $title = $titleLine.ToString().Substring(2)
-    Write-Host "Criando issue: $title" -ForegroundColor Cyan
-    gh issue create --repo $Repo --title $title --body-file $path --label "auto-import" | Out-Null
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+    Write-Host "gh CLI não encontrado no PATH." -ForegroundColor Red
+    return
 }
 
-Write-Host "Processo concluído." -ForegroundColor Green
+$basePath = Join-Path $PSScriptRoot '..' | Join-Path -ChildPath 'issues'
+if (-not (Test-Path $basePath)) { Write-Host "Diretório issues não encontrado: $basePath" -ForegroundColor Red; return }
+
+function Get-Meta {
+    param([string]$Raw)
+    $meta = @{}
+    $lines = $Raw -split "`n"
+    if ($lines.Length -gt 0 -and $lines[0].Trim() -eq '<!--') {
+        for ($i=1; $i -lt $lines.Length; $i++) {
+            $l = $lines[$i].Trim()
+            if ($l -eq '-->') { break }
+            if ($l -match '^(?<k>[^:]+):\s*(?<v>.+)$') {
+                $meta[$Matches.k.Trim()] = $Matches.v.Trim()
+            }
+        }
+    }
+    return $meta
+}
+
+function New-Slug($text) {
+    ($text.ToLower() -replace '&',' and ' -replace '[^a-z0-9]+','-').Trim('-')
+}
+
+function Get-BaseLabels($raw) {
+    $labels = @()
+    $capture = $false
+    foreach ($ln in ($raw -split "`n")) {
+        if ($ln.Trim() -eq '## Labels') { $capture = $true; continue }
+        if ($capture) {
+            $t = $ln.Trim()
+            if ($t -eq '') { continue }
+            if ($t -match '^# ') { break }
+            $labels = ($t -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+            break
+        }
+    }
+    return $labels
+}
+
+function Issue-Exists($repo,$title) {
+    # Consulta rápida; limita a 1 resultado
+    $json = gh issue list --repo $repo --search $("title:'$title'") --state all --json title --limit 1 2>$null | ConvertFrom-Json
+    if ($null -eq $json) { return $false }
+    return ($json | Where-Object { $_.title -eq $title }) -ne $null
+}
+
+$files = Get-ChildItem -Path $basePath -File -Filter 'GH-*.md' | Sort-Object Name
+if ($IncludeFilter) {
+    try {
+        # Testa padrão antes de aplicar
+        '' -match $IncludeFilter | Out-Null
+        $files = $files | Where-Object { $_.Name -match $IncludeFilter }
+    } catch {
+        Write-Host "[ERRO] IncludeFilter regex invalida: $IncludeFilter" -ForegroundColor Red
+        Write-Host "Dica: Para IDs 001-005 use: ^GH-00[1-5]- ou ^GH-001-" -ForegroundColor Yellow
+        Write-Host "      Formato dos arquivos: GH-001-descricao.md, GH-002-descricao.md, etc." -ForegroundColor Yellow
+        return
+    }
+}
+if (-not $files) { Write-Host "Nenhum arquivo correspondente encontrado." -ForegroundColor Yellow; return }
+
+Write-Host "Processando $($files.Count) arquivo(s)..." -ForegroundColor Cyan
+
+$created = 0; $skipped = 0
+foreach ($f in $files) {
+    $raw = Get-Content $f.FullName -Raw
+    $meta = Get-Meta -Raw $raw
+    # Remove bloco de comentário HTML completo e pega primeiro heading real não vazio
+    $content = $raw -replace '(?s)<!--.*?-->', ''
+    $titleLine = ($content -split "`n" | Where-Object { $_ -match '^# \S' } | Select-Object -First 1)
+    if (-not $titleLine) { Write-Warning "Título não encontrado em $($f.Name)"; continue }
+    $title = $titleLine.Substring(2).Trim()
+
+    if ($SkipExisting -and (Issue-Exists -repo $Repo -title $title)) {
+        Write-Host "Skip (já existe): $title" -ForegroundColor DarkYellow
+        $skipped++
+        continue
+    }
+
+    $labels = New-Object System.Collections.Generic.List[string]
+    (Get-BaseLabels -raw $raw) | ForEach-Object { if (-not [string]::IsNullOrWhiteSpace($_)) { $labels.Add($_) } }
+    if (-not $labels.Contains('auto-import')) { $labels.Add('auto-import') }
+
+    if ($meta.ContainsKey('Epic')) {
+        $epics = $meta['Epic'] -split '/' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+        foreach ($e in $epics) {
+            $slug = 'epic:' + (New-Slug $e)
+            if (-not $labels.Contains($slug)) { $labels.Add($slug) }
+        }
+    }
+    if ($meta.ContainsKey('Phase')) {
+        $pl = 'phase:' + $meta['Phase']
+        if (-not $labels.Contains($pl)) { $labels.Add($pl) }
+    }
+
+    $labelArg = ($labels -join ',')
+    if ($DryRun) {
+        Write-Host "[DryRun] Criaria issue: $title | Labels: $labelArg" -ForegroundColor Gray
+        continue
+    }
+
+    Write-Host "Criando issue: $title" -ForegroundColor Green
+    gh issue create --repo $Repo --title $title --body-file $f.FullName --label $labelArg | Out-Null
+    $created++
+}
+
+Write-Host "Concluído. Criadas: $created | Skipped: $skipped | DryRun: $($DryRun.IsPresent)" -ForegroundColor Cyan
