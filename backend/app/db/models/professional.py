@@ -1,0 +1,95 @@
+"""Professional model for service providers."""
+
+from sqlalchemy import String, ForeignKey, ARRAY
+from sqlalchemy.orm import Mapped, mapped_column
+
+from backend.app.db.models.base import Base, IDMixin, TimestampMixin
+
+
+class Professional(Base, IDMixin, TimestampMixin):
+    """
+    Professional model representing service providers.
+
+    A professional is linked to a User account and works at a Salon,
+    providing specific services. Can have multiple specialties and
+    custom availability schedules.
+    """
+
+    __tablename__ = "professionals"
+
+    # User relationship
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+        comment="User account for this professional",
+    )
+
+    # Salon relationship
+    salon_id: Mapped[int] = mapped_column(
+        ForeignKey("salons.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="Salon where professional works",
+    )
+
+    # Professional information
+    specialties: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        default=list,
+        comment="List of specialties (e.g., haircut, manicure, massage)",
+    )
+    bio: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+        comment="Professional biography and experience",
+    )
+
+    # Professional registration (optional)
+    license_number: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="Professional license/registration number",
+    )
+
+    # Status
+    is_active: Mapped[bool] = mapped_column(
+        default=True,
+        nullable=False,
+        comment="Whether professional is accepting bookings",
+    )
+
+    # Commission settings
+    commission_percentage: Mapped[float] = mapped_column(
+        default=50.0,
+        nullable=False,
+        comment="Commission percentage (0-100) for this professional",
+    )
+
+    # Relationships
+    # user: Mapped["User"] = relationship(
+    #     back_populates="professional",
+    #     lazy="selectin",
+    # )
+    # salon: Mapped["Salon"] = relationship(
+    #     back_populates="professionals",
+    #     lazy="selectin",
+    # )
+    # availabilities: Mapped[list["Availability"]] = relationship(
+    #     back_populates="professional",
+    #     lazy="selectin",
+    # )
+    # bookings: Mapped[list["Booking"]] = relationship(
+    #     back_populates="professional",
+    #     lazy="selectin",
+    # )
+
+    def __repr__(self) -> str:
+        """String representation of Professional."""
+        return (
+            f"<Professional(id={self.id}, "
+            f"user_id={self.user_id}, "
+            f"salon_id={self.salon_id})>"
+        )

@@ -13,6 +13,11 @@ from backend.app.db.models.base import Base
 
 # Import all models here for Alembic autogenerate
 from backend.app.db.models.user import User  # noqa: F401
+from backend.app.db.models.salon import Salon  # noqa: F401
+from backend.app.db.models.professional import Professional  # noqa: F401
+from backend.app.db.models.service import Service  # noqa: F401
+from backend.app.db.models.availability import Availability  # noqa: F401
+from backend.app.db.models.booking import Booking  # noqa: F401
 
 # Alembic Config object
 config = context.config
