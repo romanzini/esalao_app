@@ -79,7 +79,19 @@ class Settings(BaseSettings):
         )
 
     # Security
-    SECRET_KEY: str = Field(default="change-me-in-production-use-secrets-manager")
+    SECRET_KEY: str = Field(
+        default="change-me-in-production-use-secrets-manager"
+    )
+
+    # JWT Authentication
+    JWT_SECRET_KEY: str = Field(
+        default="change-me-in-production-use-openssl-rand-hex-32"
+    )
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # Legacy token fields (deprecated, use JWT_* instead)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30)
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7)
     ALGORITHM: str = "HS256"

@@ -11,6 +11,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from backend.app.core.config import settings
 from backend.app.db.models.base import Base
 
+# Import all models here for Alembic autogenerate
+from backend.app.db.models.user import User  # noqa: F401
+
 # Alembic Config object
 config = context.config
 
@@ -19,7 +22,11 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set SQLAlchemy URL from settings
-config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+# Use raw string to avoid interpolation issues with % in URL
+config.set_main_option(
+    "sqlalchemy.url",
+    str(settings.DATABASE_URL).replace("%", "%%")
+)
 
 # Add model's MetaData for 'autogenerate' support
 target_metadata = Base.metadata

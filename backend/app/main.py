@@ -13,6 +13,7 @@ from backend.app.core.metrics import (
 )
 from backend.app.core.rate_limit import limiter
 from backend.app.core.tracing import setup_tracing
+from backend.app.api.v1 import api_router
 
 
 @asynccontextmanager
@@ -37,6 +38,9 @@ setup_tracing(app)
 
 # Add rate limiter
 app.state.limiter = limiter
+
+# Include API routers
+app.include_router(api_router)
 
 
 @app.get("/health", tags=["Health"])
