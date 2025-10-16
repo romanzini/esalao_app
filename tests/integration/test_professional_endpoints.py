@@ -13,16 +13,29 @@ async def test_professional_data(db_session: AsyncSession):
     from backend.app.db.models.salon import Salon
     from backend.app.db.models.user import User, UserRole
 
+    # Create salon owner user
+    owner = User(
+        email="owner@test.com",
+        full_name="Salon Owner",
+        password_hash="hashed_password",
+        role=UserRole.ADMIN,
+    )
+    db_session.add(owner)
+    await db_session.flush()
+
     # Create salon
     salon = Salon(
         name="Test Salon",
         cnpj="12.345.678/0001-90",
         email="salon@test.com",
         phone="11999999999",
-        address="Test Street, 123",
-        city="São Paulo",
-        state="SP",
-        zipcode="01234-567",
+        address_street="Test Street",
+        address_number="123",
+        address_neighborhood="Test District",
+        address_city="São Paulo",
+        address_state="SP",
+        address_zipcode="01234-567",
+        owner_id=owner.id,
     )
     db_session.add(salon)
     await db_session.flush()
@@ -42,6 +55,7 @@ async def test_professional_data(db_session: AsyncSession):
     return {
         "salon": salon,
         "user": user,
+        "owner": owner,
     }
 
 
@@ -54,7 +68,7 @@ async def test_create_professional_success(
 ):
     """Test creating a professional successfully."""
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     data = {
@@ -91,7 +105,7 @@ async def test_create_professional_user_not_found(
 ):
     """Test creating professional with non-existent user."""
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     data = {
@@ -116,7 +130,7 @@ async def test_create_professional_salon_not_found(
 ):
     """Test creating professional with non-existent salon."""
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     data = {
@@ -143,7 +157,7 @@ async def test_create_professional_duplicate_user(
     from backend.app.db.models.professional import Professional
 
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     # Create existing professional
@@ -178,7 +192,7 @@ async def test_create_professional_forbidden_client(
 ):
     """Test that CLIENT role cannot create professionals."""
     # auth_user is CLIENT by default
-    assert auth_user.role == "CLIENT"
+    assert auth_user.role == "client"
 
     data = {
         "user_id": test_professional_data["user"].id,
@@ -278,7 +292,7 @@ async def test_update_professional_by_admin(
     from backend.app.db.models.professional import Professional
 
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     # Create professional
@@ -321,7 +335,7 @@ async def test_update_professional_own_profile(
     from backend.app.db.models.professional import Professional
 
     # Make auth_user a PROFESSIONAL
-    auth_user.role = "PROFESSIONAL"
+    auth_user.role = "professional"
     await db_session.commit()
 
     # Create professional for auth_user
@@ -362,7 +376,7 @@ async def test_update_professional_forbidden_other_profile(
     from backend.app.db.models.professional import Professional
 
     # Make auth_user a PROFESSIONAL
-    auth_user.role = "PROFESSIONAL"
+    auth_user.role = "professional"
     await db_session.commit()
 
     # Create professional for different user
@@ -397,7 +411,7 @@ async def test_update_professional_commission_forbidden_for_professional(
     from backend.app.db.models.professional import Professional
 
     # Make auth_user a PROFESSIONAL
-    auth_user.role = "PROFESSIONAL"
+    auth_user.role = "professional"
     await db_session.commit()
 
     # Create professional for auth_user
@@ -433,7 +447,7 @@ async def test_deactivate_professional(
     from backend.app.db.models.professional import Professional
 
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     # Create professional
@@ -466,7 +480,7 @@ async def test_deactivate_professional_not_found(
 ):
     """Test deactivating non-existent professional."""
     # Make auth_user an ADMIN
-    auth_user.role = "ADMIN"
+    auth_user.role = "admin"
     await db_session.commit()
 
     response = await authenticated_client.delete("/v1/professionals/99999")
@@ -485,7 +499,7 @@ async def test_deactivate_professional_forbidden_client(
     from backend.app.db.models.professional import Professional
 
     # auth_user is CLIENT by default
-    assert auth_user.role == "CLIENT"
+    assert auth_user.role == "client"
 
     # Create professional
     professional = Professional(

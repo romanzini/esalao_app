@@ -2,7 +2,6 @@
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from backend.app.db.models.service import Service
 
@@ -47,8 +46,7 @@ class ServiceRepository:
         )
 
         self.session.add(service)
-        await self.session.commit()
-        await self.session.refresh(service)
+        await self.session.flush()
 
         return service
 
@@ -58,15 +56,16 @@ class ServiceRepository:
 
         Args:
             service_id: Service ID
-            load_salon: Whether to eagerly load salon relationship
+            load_salon: Whether to eagerly load salon relationship (not implemented yet)
 
         Returns:
             Service instance or None if not found
         """
         stmt = select(Service).where(Service.id == service_id)
 
-        if load_salon:
-            stmt = stmt.options(selectinload(Service.salon))
+        # Note: Relationships are commented out in the model
+        # if load_salon:
+        #     stmt = stmt.options(selectinload(Service.salon))
 
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
@@ -166,7 +165,7 @@ class ServiceRepository:
 
     async def delete(self, service_id: int) -> bool:
         """
-        Delete a service.
+        Soft delete a service by setting is_active=False.
 
         Args:
             service_id: Service ID
@@ -178,7 +177,7 @@ class ServiceRepository:
         if not service:
             return False
 
-        await self.session.delete(service)
+        service.is_active = False
         await self.session.commit()
 
         return True

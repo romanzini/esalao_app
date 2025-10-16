@@ -2,7 +2,6 @@
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from backend.app.db.models.professional import Professional
 
@@ -61,19 +60,20 @@ class ProfessionalRepository:
 
         Args:
             professional_id: Professional ID
-            load_relationships: Whether to eagerly load user, salon, availabilities
+            load_relationships: Whether to eagerly load user, salon, availabilities (not implemented yet)
 
         Returns:
             Professional instance or None if not found
         """
         stmt = select(Professional).where(Professional.id == professional_id)
 
-        if load_relationships:
-            stmt = stmt.options(
-                selectinload(Professional.user),
-                selectinload(Professional.salon),
-                selectinload(Professional.availabilities),
-            )
+        # Note: Relationships are commented out in the model
+        # if load_relationships:
+        #     stmt = stmt.options(
+        #         selectinload(Professional.user),
+        #         selectinload(Professional.salon),
+        #         selectinload(Professional.availabilities),
+        #     )
 
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
@@ -105,7 +105,6 @@ class ProfessionalRepository:
         stmt = (
             select(Professional)
             .where(Professional.salon_id == salon_id)
-            .options(selectinload(Professional.user))
             .order_by(Professional.id)
         )
         result = await self.session.execute(stmt)

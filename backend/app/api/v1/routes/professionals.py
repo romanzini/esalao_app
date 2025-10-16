@@ -63,7 +63,7 @@ async def create_professional(
     Required permissions: ADMIN or RECEPTIONIST role.
     """
     # RBAC: Only ADMIN and RECEPTIONIST can create professionals
-    if current_user.role not in ["ADMIN", "RECEPTIONIST"]:
+    if current_user.role not in ["admin", "receptionist"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admins and receptionists can create professionals",
@@ -285,14 +285,14 @@ async def update_professional(
         )
 
     # RBAC: Check permissions
-    if current_user.role == "ADMIN":
+    if current_user.role == "admin":
         # Admin can update any professional
         pass
-    elif current_user.role == "RECEPTIONIST":
+    elif current_user.role == "receptionist":
         # Receptionist can update professionals in their salon
         # TODO: Implement salon membership check
         pass
-    elif current_user.role == "PROFESSIONAL":
+    elif current_user.role == "professional":
         # Professional can only update their own profile
         if professional.user_id != current_user.id:
             raise HTTPException(
@@ -342,7 +342,7 @@ async def deactivate_professional(
     Required permissions: ADMIN or RECEPTIONIST role.
     """
     # RBAC: Only ADMIN and RECEPTIONIST can deactivate professionals
-    if current_user.role not in ["ADMIN", "RECEPTIONIST"]:
+    if current_user.role not in ["admin", "receptionist"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admins and receptionists can deactivate professionals",

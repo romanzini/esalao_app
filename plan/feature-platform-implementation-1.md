@@ -86,8 +86,8 @@ Plano determinístico e executável para implementar a plataforma (backend monol
 | TASK-0110 | Documentação OpenAPI inicial (tags Auth, Scheduling) | 🔄 | Auth OK |
 | TASK-0111 | Testes unidade slots (gaps, overlaps) | ⏳ | |
 | TASK-0112 | Testes integração auth + reserva happy path | ⏳ | |
-| TASK-0113 | Endpoint professional (`routes/professionals.py`) | ⏳ | |
-| TASK-0114 | Endpoint service (`routes/services.py`) | ⏳ | |
+| TASK-0113 | Endpoint professional (`routes/professionals.py`) | ✅ | 2025-01-16 |
+| TASK-0114 | Endpoint service (`routes/services.py`) | ✅ | 2025-01-16 |
 
 ### Implementation Phase 2 (Pagamentos & Notificações)
 
