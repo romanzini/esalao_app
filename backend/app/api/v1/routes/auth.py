@@ -34,6 +34,45 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
         "Create a new user account and return authentication tokens. "
         "Email must be unique and password must be at least 8 characters."
     ),
+    responses={
+        201: {
+            "description": "User registered successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token_type": "bearer",
+                        "expires_in": 3600,
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "Email already registered or invalid input",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Email already registered"}
+                }
+            },
+        },
+        422: {
+            "description": "Validation error",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "loc": ["body", "password"],
+                                "msg": "ensure this value has at least 8 characters",
+                                "type": "value_error.any_str.min_length",
+                            }
+                        ]
+                    }
+                }
+            },
+        },
+    },
 )
 async def register(
     user_data: UserRegisterRequest,
@@ -75,6 +114,37 @@ async def register(
         "Authenticate user with email and password. "
         "Returns access and refresh tokens on success."
     ),
+    responses={
+        200: {
+            "description": "Login successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token_type": "bearer",
+                        "expires_in": 3600,
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "Invalid credentials",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Incorrect email or password"}
+                }
+            },
+        },
+        403: {
+            "description": "User account inactive",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User account is inactive"}
+                }
+            },
+        },
+    },
 )
 async def login(
     credentials: UserLoginRequest,
@@ -124,6 +194,37 @@ async def login(
         "Exchange a valid refresh token for a new access token. "
         "Refresh token rotation: returns new refresh token as well."
     ),
+    responses={
+        200: {
+            "description": "Token refreshed successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token_type": "bearer",
+                        "expires_in": 3600,
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "Invalid or expired refresh token",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid refresh token: Token has expired"}
+                }
+            },
+        },
+        403: {
+            "description": "User account inactive",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User account is inactive"}
+                }
+            },
+        },
+    },
 )
 async def refresh(
     token_data: RefreshTokenRequest,
@@ -172,6 +273,40 @@ async def refresh(
         "Get the currently authenticated user's profile information. "
         "Requires valid access token in Authorization header."
     ),
+    responses={
+        200: {
+            "description": "User profile retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": 1,
+                        "email": "john.doe@example.com",
+                        "full_name": "John Doe",
+                        "phone": "+5511999999999",
+                        "role": "client",
+                        "is_active": True,
+                        "created_at": "2025-10-16T10:00:00Z",
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "Invalid or missing token",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Could not validate credentials"}
+                }
+            },
+        },
+        403: {
+            "description": "User account inactive",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User account is inactive"}
+                }
+            },
+        },
+    },
 )
 async def get_me(current_user: User = Depends(get_current_user)) -> UserResponse:
     """Get current authenticated user profile."""
