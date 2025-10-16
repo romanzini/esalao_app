@@ -69,3 +69,42 @@ async def client(db_session: AsyncSession):
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_user(db_session: AsyncSession):
+    """Create and return an authenticated test user."""
+    from backend.app.db.models.user import User, UserRole
+
+    test_user = User(
+        email="authenticated_test@test.com",
+        password_hash="hashed",
+        full_name="Test User",
+        role=UserRole.CLIENT,
+    )
+    db_session.add(test_user)
+    await db_session.flush()
+    await db_session.refresh(test_user)
+    return test_user
+
+
+@pytest_asyncio.fixture(scope="function")
+async def authenticated_client(db_session: AsyncSession, auth_user):
+    """Create test client with authentication override."""
+    from backend.app.core.security.rbac import get_current_user
+    from backend.app.db.session import get_db
+
+    async def override_get_db():
+        yield db_session
+
+    async def override_get_current_user():
+        return auth_user
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+    app.dependency_overrides.clear()

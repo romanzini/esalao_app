@@ -23,9 +23,11 @@ class BookingRepository:
         professional_id: int,
         service_id: int,
         scheduled_at: datetime,
-        total_price: float,
+        duration_minutes: int,
+        service_price: float,
         status: BookingStatus = BookingStatus.PENDING,
         notes: str | None = None,
+        deposit_amount: float | None = None,
     ) -> Booking:
         """
         Create a new booking.
@@ -35,9 +37,11 @@ class BookingRepository:
             professional_id: ID of the professional
             service_id: ID of the service
             scheduled_at: Scheduled date and time
-            total_price: Total price for the booking
+            duration_minutes: Service duration in minutes
+            service_price: Service price at booking time
             status: Booking status (default: PENDING)
             notes: Optional booking notes
+            deposit_amount: Optional deposit/prepayment amount
 
         Returns:
             Created Booking instance
@@ -47,14 +51,15 @@ class BookingRepository:
             professional_id=professional_id,
             service_id=service_id,
             scheduled_at=scheduled_at,
-            total_price=total_price,
+            duration_minutes=duration_minutes,
+            service_price=service_price,
             status=status,
             notes=notes,
+            deposit_amount=deposit_amount,
         )
 
         self.session.add(booking)
-        await self.session.commit()
-        await self.session.refresh(booking)
+        await self.session.flush()
 
         return booking
 
@@ -236,13 +241,19 @@ class BookingRepository:
 
         return conflicting is not None
 
-    async def update_status(self, booking_id: int, status: BookingStatus) -> Booking | None:
+    async def update_status(
+        self,
+        booking_id: int,
+        new_status: BookingStatus,
+        cancellation_reason: str | None = None,
+    ) -> Booking | None:
         """
         Update booking status.
 
         Args:
             booking_id: Booking ID
-            status: New status
+            new_status: New status
+            cancellation_reason: Reason for cancellation (required if status is CANCELLED)
 
         Returns:
             Updated Booking instance or None if not found
@@ -251,9 +262,13 @@ class BookingRepository:
         if not booking:
             return None
 
-        booking.status = status
-        await self.session.commit()
-        await self.session.refresh(booking)
+        booking.status = new_status
+
+        if new_status == BookingStatus.CANCELLED:
+            booking.cancelled_at = datetime.now()
+            booking.cancellation_reason = cancellation_reason
+
+        await self.session.flush()
 
         return booking
 
