@@ -84,7 +84,7 @@ Plano determinístico e executável para implementar a plataforma (backend monol
 | TASK-0108 | Endpoint criar reserva básica (`routes/bookings.py`) | ✅ | 2025-10-16 |
 | TASK-0109 | RBAC decorator `core/security/rbac.py` + endpoint /me | ✅ | 2025-10-16 |
 | TASK-0110 | Documentação OpenAPI inicial (tags Auth, Scheduling) | 🔄 | Auth OK |
-| TASK-0111 | Testes unidade slots (gaps, overlaps) | ⏳ | |
+| TASK-0111 | Testes unitários segurança (test_password, test_jwt, test_rbac) | ✅ | 2025-01-16 |
 | TASK-0112 | Testes integração auth + reserva happy path | ⏳ | |
 | TASK-0113 | Endpoint professional (`routes/professionals.py`) | ✅ | 2025-01-16 |
 | TASK-0114 | Endpoint service (`routes/services.py`) | ✅ | 2025-01-16 |
