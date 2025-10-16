@@ -18,9 +18,11 @@ class ProfessionalRepository:
         self,
         user_id: int,
         salon_id: int,
-        specialties: str | None = None,
+        specialties: list[str] | None = None,
         bio: str | None = None,
-        commission_rate: float = 0.0,
+        license_number: str | None = None,
+        commission_percentage: float = 50.0,
+        is_active: bool = True,
     ) -> Professional:
         """
         Create a new professional.
@@ -28,9 +30,11 @@ class ProfessionalRepository:
         Args:
             user_id: ID of the user account
             salon_id: ID of the salon
-            specialties: Optional specialties description
+            specialties: List of specialties
             bio: Optional biography
-            commission_rate: Commission rate (0.0-1.0)
+            license_number: Optional license number
+            commission_percentage: Commission percentage (0-100)
+            is_active: Whether professional is active
 
         Returns:
             Created Professional instance
@@ -38,13 +42,15 @@ class ProfessionalRepository:
         professional = Professional(
             user_id=user_id,
             salon_id=salon_id,
-            specialties=specialties,
+            specialties=specialties or [],
             bio=bio,
-            commission_rate=commission_rate,
+            license_number=license_number,
+            commission_percentage=commission_percentage,
+            is_active=is_active,
         )
 
         self.session.add(professional)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(professional)
 
         return professional

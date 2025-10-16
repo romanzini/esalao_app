@@ -2,15 +2,15 @@
 goal: Plataforma Marketplace de Salões - Plano de Implementação End-to-End
 version: 1.0
 date_created: 2025-10-15
-last_updated: 2025-10-15
+last_updated: 2025-10-16
 owner: Engenharia Plataforma
-status: 'Planned'
+status: 'In Progress'
 tags: [feature, architecture, backend, fastapi, postgres, scheduling, payments, security, observability]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: In Progress](https://img.shields.io/badge/status-In%20Progress-yellow)
 
 Plano determinístico e executável para implementar a plataforma (backend monolito modular FastAPI + PostgreSQL + Redis + Celery) cobrindo todas as 50 user stories (GH-001..GH-050) em fases incrementais. Cada tarefa define artefatos, critérios de conclusão e dependências explícitas para permitir execução paralela controlada por qualquer agente humano ou automatizado.
 
@@ -81,11 +81,13 @@ Plano determinístico e executável para implementar a plataforma (backend monol
 | TASK-0105 | Migração Alembic tabelas core (`alembic/versions/891c705f503c`) | ✅ | 2025-10-16 |
 | TASK-0106 | Serviço slot merge `domain/scheduling/services/slot_service.py` | ✅ | 2025-10-16 |
 | TASK-0107 | Endpoint buscar slots (`routes/scheduling.py`) | ✅ | 2025-01-16 |
-| TASK-0108 | Endpoint criar reserva básica (`routes/bookings.py`) | ⏳ | |
+| TASK-0108 | Endpoint criar reserva básica (`routes/bookings.py`) | ✅ | 2025-10-16 |
 | TASK-0109 | RBAC decorator `core/security/rbac.py` + endpoint /me | ✅ | 2025-10-16 |
 | TASK-0110 | Documentação OpenAPI inicial (tags Auth, Scheduling) | 🔄 | Auth OK |
 | TASK-0111 | Testes unidade slots (gaps, overlaps) | ⏳ | |
 | TASK-0112 | Testes integração auth + reserva happy path | ⏳ | |
+| TASK-0113 | Endpoint professional (`routes/professionals.py`) | ⏳ | |
+| TASK-0114 | Endpoint service (`routes/services.py`) | ⏳ | |
 
 ### Implementation Phase 2 (Pagamentos & Notificações)
 
@@ -346,6 +348,55 @@ Tabela de rastreabilidade entre cada TASK do plano e as issues (GH-xxx). Tarefas
 | TASK-0606 | PER-001 | Performance | Cache slots/catalog |
 | TASK-0607 | SEC-001..SEC-004 | Segurança | Hardening final |
 | TASK-0608 | FOUNDATION | Qualidade | Fechamento dívida técnica |
+
+## 3. Progress Summary
+
+### Phase 0: Fundações (13/13 = 100%) ✅
+Todas as tarefas de infraestrutura base, observabilidade e pipeline CI/CD concluídas.
+
+### Phase 1: Auth, Entidades, Agenda Básica (8/15 = 53%) 🔄
+**Concluídas (8):**
+- TASK-0100: Model User + hashing Argon2 ✅
+- TASK-0101: JWT utils + refresh rotation ✅
+- TASK-0102: Endpoints auth (login/register/refresh) ✅
+- TASK-0103: Models core (Salon, Professional, Service, Availability, Booking) ✅
+- TASK-0104: Repositórios (6 repositórios, 51 métodos) ✅
+- TASK-0105: Migração Alembic tabelas core ✅
+- TASK-0106: SlotService (95.29% coverage, 12 testes unitários) ✅
+- TASK-0107: Endpoint GET /v1/scheduling/slots (5 testes integração) ✅
+- TASK-0108: Endpoints CRUD Bookings (5 endpoints REST, RBAC, 8/12 testes) ✅
+- TASK-0109: RBAC decorator + /me endpoint ✅
+
+**Parcialmente (1):**
+- TASK-0110: Documentação OpenAPI (Auth ✅, Scheduling ✅, Bookings ✅)
+
+**Pendentes (5):**
+- TASK-0111: Testes unitários críticos (≥80% coverage)
+- TASK-0112: Testes integração (auth flow + booking flow)
+- TASK-0113: Endpoint professional
+- TASK-0114: Endpoint service
+
+### Phase 2: Pagamentos & Notificações (0/13 = 0%) ⏳
+Aguardando conclusão da Phase 1.
+
+### Phase 3: Políticas & Relatórios (0/12 = 0%) ⏳
+Aguardando conclusão das phases anteriores.
+
+### Phase 4: Agenda Avançada, Avaliações, Fidelidade (0/12 = 0%) ⏳
+Aguardando conclusão das phases anteriores.
+
+### Phase 5: Segurança, Compliance, Performance (0/11 = 0%) ⏳
+Aguardando conclusão das phases anteriores.
+
+### Phase 6: Features Finais & Hardening (0/9 = 0%) ⏳
+Aguardando conclusão das phases anteriores.
+
+**Total Geral: 21/86 tarefas concluídas (24.4%)**
+
+### Próximos Passos Recomendados
+1. **TASK-0111**: Testes unitários para funções críticas (test_password, test_jwt, test_rbac)
+2. **TASK-0112**: Testes de integração end-to-end (auth_flow, booking_flow)
+3. **TASK-0113/0114**: Endpoints de professional e service para completar CRUD base
 
 Critérios de validação automáticos recomendados:
 

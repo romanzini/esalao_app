@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from backend.app.api.v1.routes import auth, bookings, scheduling
+from backend.app.api.v1.routes import auth, bookings, professionals, scheduling
 
 api_router = APIRouter(prefix="/v1")
 
@@ -10,5 +10,6 @@ api_router = APIRouter(prefix="/v1")
 api_router.include_router(auth.router)
 api_router.include_router(scheduling.router)
 api_router.include_router(bookings.router)
+api_router.include_router(professionals.router)
 
 __all__ = ["api_router"]
