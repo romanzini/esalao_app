@@ -1,5 +1,5 @@
 """API v1 routes package."""
 
-from backend.app.api.v1.routes import auth
+from backend.app.api.v1.routes import auth, scheduling
 
-__all__ = ["auth"]
+__all__ = ["auth", "scheduling"]

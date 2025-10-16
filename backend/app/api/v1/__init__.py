@@ -2,11 +2,12 @@
 
 from fastapi import APIRouter
 
-from backend.app.api.v1.routes import auth
+from backend.app.api.v1.routes import auth, scheduling
 
 api_router = APIRouter(prefix="/v1")
 
 # Include route modules
 api_router.include_router(auth.router)
+api_router.include_router(scheduling.router)
 
 __all__ = ["api_router"]

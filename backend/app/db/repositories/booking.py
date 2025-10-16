@@ -153,7 +153,6 @@ class BookingRepository:
                     Booking.status.in_([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
                 )
             )
-            .options(selectinload(Booking.service))
             .order_by(Booking.scheduled_at)
         )
         result = await self.session.execute(stmt)

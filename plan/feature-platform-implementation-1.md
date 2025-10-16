@@ -80,7 +80,7 @@ Plano determinístico e executável para implementar a plataforma (backend monol
 | TASK-0104 | Repositórios entidades (`db/repositories/user.py`) CRUD básico | ✅ | 2025-10-16 |
 | TASK-0105 | Migração Alembic tabelas core (`alembic/versions/891c705f503c`) | ✅ | 2025-10-16 |
 | TASK-0106 | Serviço slot merge `domain/scheduling/services/slot_service.py` | ✅ | 2025-10-16 |
-| TASK-0107 | Endpoint buscar slots (`routes/scheduling.py`) | ⏳ | |
+| TASK-0107 | Endpoint buscar slots (`routes/scheduling.py`) | ✅ | 2025-01-16 |
 | TASK-0108 | Endpoint criar reserva básica (`routes/bookings.py`) | ⏳ | |
 | TASK-0109 | RBAC decorator `core/security/rbac.py` + endpoint /me | ✅ | 2025-10-16 |
 | TASK-0110 | Documentação OpenAPI inicial (tags Auth, Scheduling) | 🔄 | Auth OK |

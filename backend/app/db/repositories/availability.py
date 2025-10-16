@@ -152,14 +152,8 @@ class AvailabilityRepository:
         result = await self.session.execute(stmt)
         availabilities = list(result.scalars().all())
 
-        # Filter by effective and expiry dates
-        active = []
-        for avail in availabilities:
-            if avail.effective_date and check_date < avail.effective_date:
-                continue
-            if avail.expiry_date and check_date > avail.expiry_date:
-                continue
-            active.append(avail)
+        # Filter by is_active status
+        active = [avail for avail in availabilities if avail.is_active]
 
         return active
 
