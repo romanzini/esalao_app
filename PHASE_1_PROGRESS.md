@@ -1,11 +1,12 @@
 # Phase 1 - Progress Report
 
 **Data de Início**: 2025-10-15  
-**Status**: 🚧 Em Andamento (23% completo - 3/13 tasks)
+**Última Atualização**: 2025-10-16  
+**Status**: 🚧 Em Andamento (62% completo - 8/13 tasks)
 
 ## Resumo Executivo
 
-Iniciada a implementação da Phase 1, focando em **autenticação e autorização**. Completadas as 3 primeiras tasks (TASK-0100, TASK-0101, TASK-0102), estabelecendo a fundação do sistema de autenticação com JWT, Argon2 password hashing e endpoints de registro/login.
+Phase 1 com **62% de progresso** (8/13 tasks). Completadas as bases críticas: autenticação JWT com Argon2, modelos de domínio, migração Alembic, RBAC e **todos os 6 repositórios**. Prontos para implementar o serviço de slots e endpoints de agendamento.
 
 ## Tasks Completadas ✅
 
@@ -118,15 +119,44 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 - Fix para URL encoding (`%` escapado como `%%`)
 - Pronto para gerar migrations
 
+## Tasks Recém-Completadas ✅
+
+### TASK-0103: Models de Domínio (Salon, Professional, Service, Availability, Booking) ✅
+- **Status**: Completo
+- **Data**: 2025-10-15
+- **Arquivos**: `backend/app/db/models/{salon,professional,service,availability,booking}.py`
+
+### TASK-0104: Todos os Repositórios CRUD ✅
+- **Status**: Completo
+- **Data**: 2025-10-16
+- **Arquivos**:
+  - `backend/app/db/repositories/salon.py` (183 linhas)
+  - `backend/app/db/repositories/professional.py` (182 linhas)
+  - `backend/app/db/repositories/service.py` (195 linhas)
+  - `backend/app/db/repositories/availability.py` (219 linhas)
+  - `backend/app/db/repositories/booking.py` (282 linhas)
+  - `backend/app/db/repositories/__init__.py` (exportação centralizada)
+- **Features**: 51 métodos CRUD + busca implementados
+- **Detalhes**: Ver `TASK_0104_REPOSITORIES_COMPLETE.md`
+
+### TASK-0105: Migração Alembic ✅
+- **Status**: Completo
+- **Data**: 2025-10-16
+- **Arquivo**: `alembic/versions/891c705f503c_add_core_entities_user_salon_.py`
+- **Features**: 6 tabelas criadas com 13 indexes e 8 foreign keys
+
+### TASK-0109: RBAC + Endpoint /me ✅
+- **Status**: Completo
+- **Data**: 2025-10-16
+- **Arquivo**: `backend/app/core/security/rbac.py`
+- **Features**: Decorators role-based, endpoint protegido `/v1/auth/me`
+
 ## Tasks Pendentes (Phase 1)
 
 | Task ID | Descrição | Status | Dependências |
 |---------|-----------|--------|--------------|
-| TASK-0103 | Salon model CRUD | ⏳ Not Started | TASK-0100 |
-| TASK-0104 | Professional model CRUD | ⏳ Not Started | TASK-0100, TASK-0103 |
-| TASK-0105 | Service model CRUD | ⏳ Not Started | TASK-0103 |
-| TASK-0106 | Availability model | ⏳ Not Started | TASK-0104 |
-| TASK-0107 | Slot calculation service | ⏳ Not Started | TASK-0106 |
+| TASK-0106 | Slot calculation service | ⏳ Not Started | TASK-0104 ✅ |
+| TASK-0107 | Endpoint buscar slots | ⏳ Not Started | TASK-0106 |
 | TASK-0108 | Booking model e endpoint | ⏳ Not Started | TASK-0100, TASK-0104, TASK-0105 |
 | TASK-0109 | RBAC middleware | ⏳ Not Started | TASK-0100 |
 | TASK-0110 | Primeira migração Alembic | ⏳ Not Started | TASK-0103 até TASK-0108 |

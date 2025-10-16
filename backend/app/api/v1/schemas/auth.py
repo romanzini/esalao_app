@@ -1,5 +1,7 @@
 """Pydantic schemas for authentication endpoints."""
 
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -84,5 +86,7 @@ class UserResponse(BaseModel):
     role: str = Field(..., description="User role")
     is_active: bool = Field(..., description="Account is active")
     is_verified: bool = Field(..., description="Email is verified")
+    created_at: datetime = Field(..., description="Account creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
 
     model_config = {"from_attributes": True}

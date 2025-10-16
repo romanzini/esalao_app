@@ -73,19 +73,19 @@ Plano determinístico e executável para implementar a plataforma (backend monol
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-0100 | Model `User` + hashing Argon2 (`backend/app/domain/auth/models.py`) | | |
-| TASK-0101 | JWT utils (`backend/app/core/security/jwt.py`) + refresh rotation | | |
-| TASK-0102 | Endpoints auth (`backend/app/api/v1/routes/auth.py`) login/register/refresh | | |
-| TASK-0103 | Models `Salon`, `Unit`, `Professional`, `Service` (`db/models/`) | | |
-| TASK-0104 | Repositórios entidades (`db/repositories/*.py`) CRUD básico | | |
-| TASK-0105 | Disponibilidade: schema + tabela `professional_availability` | | |
-| TASK-0106 | Serviço slot merge `domain/scheduling/services/slot_service.py` | | |
-| TASK-0107 | Endpoint buscar slots (`routes/scheduling.py`) | | |
-| TASK-0108 | Endpoint criar reserva básica (`routes/bookings.py`) | | |
-| TASK-0109 | RBAC decorator `core/security/rbac.py` + testes | | |
-| TASK-0110 | Documentação OpenAPI inicial (tags Auth, Scheduling) | | |
-| TASK-0111 | Testes unidade slots (gaps, overlaps) | | |
-| TASK-0112 | Testes integração auth + reserva happy path | | |
+| TASK-0100 | Model `User` + hashing Argon2 (`backend/app/db/models/user.py`) | ✅ | 2025-10-15 |
+| TASK-0101 | JWT utils (`backend/app/core/security/jwt.py`) + refresh rotation | ✅ | 2025-10-15 |
+| TASK-0102 | Endpoints auth (`backend/app/api/v1/routes/auth.py`) login/register/refresh | ✅ | 2025-10-15 |
+| TASK-0103 | Models `Salon`, `Professional`, `Service`, `Availability`, `Booking` (`db/models/`) | ✅ | 2025-10-15 |
+| TASK-0104 | Repositórios entidades (`db/repositories/user.py`) CRUD básico | ✅ | 2025-10-16 |
+| TASK-0105 | Migração Alembic tabelas core (`alembic/versions/891c705f503c`) | ✅ | 2025-10-16 |
+| TASK-0106 | Serviço slot merge `domain/scheduling/services/slot_service.py` | ⏳ | |
+| TASK-0107 | Endpoint buscar slots (`routes/scheduling.py`) | ⏳ | |
+| TASK-0108 | Endpoint criar reserva básica (`routes/bookings.py`) | ⏳ | |
+| TASK-0109 | RBAC decorator `core/security/rbac.py` + endpoint /me | ✅ | 2025-10-16 |
+| TASK-0110 | Documentação OpenAPI inicial (tags Auth, Scheduling) | 🔄 | Auth OK |
+| TASK-0111 | Testes unidade slots (gaps, overlaps) | ⏳ | |
+| TASK-0112 | Testes integração auth + reserva happy path | ⏳ | |
 
 ### Implementation Phase 2 (Pagamentos & Notificações)
 

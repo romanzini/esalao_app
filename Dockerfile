@@ -19,23 +19,28 @@ RUN apt-get update && \
 # Stage 2: Builder - install dependencies
 FROM base as builder
 
+# Install setuptools for editable installs
+RUN pip install --no-cache-dir setuptools wheel
+
 COPY pyproject.toml ./
-RUN pip install --user --no-cache-dir -e .[dev]
+RUN pip install --no-cache-dir -e .
 
 # Stage 3: Runtime image
 FROM base as runtime
 
 # Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Create non-root user BEFORE copying application code
+RUN useradd -m -u 1000 appuser
 
 # Copy application code
-COPY backend/ ./backend/
-COPY alembic/ ./alembic/
-COPY alembic.ini ./
+COPY --chown=appuser:appuser backend/ ./backend/
+COPY --chown=appuser:appuser alembic/ ./alembic/
+COPY --chown=appuser:appuser alembic.ini ./
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Switch to non-root user
 USER appuser
 
 EXPOSE 8000

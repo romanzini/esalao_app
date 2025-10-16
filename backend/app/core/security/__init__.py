@@ -13,6 +13,18 @@ from backend.app.core.security.password import (
     verify_password,
     needs_rehash,
 )
+from backend.app.core.security.rbac import (
+    get_current_user,
+    get_current_active_user,
+    require_role,
+    require_any_role,
+    require_admin,
+    require_salon_owner,
+    require_professional,
+    require_client,
+    require_staff,
+    require_professional_or_staff,
+)
 
 __all__ = [
     # JWT
@@ -26,4 +38,15 @@ __all__ = [
     "hash_password",
     "verify_password",
     "needs_rehash",
+    # RBAC
+    "get_current_user",
+    "get_current_active_user",
+    "require_role",
+    "require_any_role",
+    "require_admin",
+    "require_salon_owner",
+    "require_professional",
+    "require_client",
+    "require_staff",
+    "require_professional_or_staff",
 ]

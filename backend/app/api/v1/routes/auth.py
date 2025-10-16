@@ -9,15 +9,17 @@ from backend.app.api.v1.schemas.auth import (
     UserLoginRequest,
     RefreshTokenRequest,
     TokenResponse,
+    UserResponse,
 )
 from backend.app.core.security import (
     hash_password,
     verify_password,
     create_token_pair,
     verify_token,
+    get_current_user,
 )
 from backend.app.db.repositories.user import UserRepository
-from backend.app.db.models.user import UserRole
+from backend.app.db.models.user import User, UserRole
 from backend.app.db.session import get_db
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -159,4 +161,28 @@ async def refresh(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid refresh token: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current user",
+    description=(
+        "Get the currently authenticated user's profile information. "
+        "Requires valid access token in Authorization header."
+    ),
+)
+async def get_me(current_user: User = Depends(get_current_user)) -> UserResponse:
+    """Get current authenticated user profile."""
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        phone=current_user.phone,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        is_verified=current_user.is_verified,
+        created_at=current_user.created_at,
+        updated_at=current_user.updated_at,
+    )

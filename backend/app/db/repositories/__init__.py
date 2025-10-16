@@ -1,1 +1,17 @@
-"""Database repositories."""
+"""Repository layer for database operations."""
+
+from backend.app.db.repositories.availability import AvailabilityRepository
+from backend.app.db.repositories.booking import BookingRepository
+from backend.app.db.repositories.professional import ProfessionalRepository
+from backend.app.db.repositories.salon import SalonRepository
+from backend.app.db.repositories.service import ServiceRepository
+from backend.app.db.repositories.user import UserRepository
+
+__all__ = [
+    "AvailabilityRepository",
+    "BookingRepository",
+    "ProfessionalRepository",
+    "SalonRepository",
+    "ServiceRepository",
+    "UserRepository",
+]
