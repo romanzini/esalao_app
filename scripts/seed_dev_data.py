@@ -10,13 +10,16 @@ This script creates:
 - Sample bookings
 
 Usage:
-    python scripts/seed_dev_data.py
+    python scripts/seed_dev_data.py           # Add data (skip if exists)
+    python scripts/seed_dev_data.py --reset   # Clear database and add data
 """
 
 import asyncio
+import sys
 from datetime import datetime, time, timezone
 from decimal import Decimal
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.security.password import hash_password
@@ -29,6 +32,25 @@ from backend.app.db.models.user import User, UserRole
 from backend.app.db.session import AsyncSessionLocal
 
 
+async def clear_database(db: AsyncSession) -> None:
+    """Clear all data from database (for testing purposes)."""
+    print("⚠️  Clearing database...")
+
+    # Drop in reverse order of dependencies
+    tables = [
+        "availabilities",
+        "bookings",
+        "services",
+        "professionals",
+        "salons",
+        "users",
+    ]
+
+    for table in tables:
+        await db.execute(text(f"TRUNCATE TABLE {table} CASCADE"))
+
+    await db.commit()
+    print("✓ Database cleared")
 async def seed_users(db: AsyncSession) -> dict[str, User]:
     """Create test users."""
     print("Creating users...")
@@ -142,26 +164,34 @@ async def seed_salons(db: AsyncSession, users: dict[str, User]) -> dict[str, Sal
 
     salons = {
         "salon1": Salon(
-            full_name="Beleza Urbana",
+            name="Beleza Urbana",
             description="Salão moderno no centro da cidade com serviços completos de beleza e estética.",
-            address="Rua das Flores, 123",
-            city="São Paulo",
-            state="SP",
-            postal_code="01310-100",
+            cnpj="12.345.678/0001-90",
             phone="+5511999881001",
             email="contato@belezaurbana.com.br",
+            address_street="Rua das Flores",
+            address_number="123",
+            address_complement=None,
+            address_neighborhood="Centro",
+            address_city="São Paulo",
+            address_state="SP",
+            address_zipcode="01310-100",
             owner_id=users["owner1"].id,
             is_active=True,
         ),
         "salon2": Salon(
-            full_name="Studio Glamour",
+            name="Studio Glamour",
             description="Espaço exclusivo especializado em cabelos, unhas e maquiagem profissional.",
-            address="Av. Paulista, 456",
-            city="São Paulo",
-            state="SP",
-            postal_code="01310-200",
+            cnpj="98.765.432/0001-10",
             phone="+5511999882002",
             email="contato@studioglamour.com.br",
+            address_street="Av. Paulista",
+            address_number="456",
+            address_complement="Conjunto 102",
+            address_neighborhood="Bela Vista",
+            address_city="São Paulo",
+            address_state="SP",
+            address_zipcode="01310-200",
             owner_id=users["owner2"].id,
             is_active=True,
         ),
@@ -395,8 +425,15 @@ async def main():
     print("🌱 SEEDING DATABASE WITH DEV/TEST DATA")
     print("=" * 60 + "\n")
 
+    # Check for reset flag
+    reset_mode = "--reset" in sys.argv
+
     async with AsyncSessionLocal() as db:
         try:
+            # Clear database if requested
+            if reset_mode:
+                await clear_database(db)
+
             # Seed in order (respecting foreign keys)
             users = await seed_users(db)
             salons = await seed_salons(db, users)
@@ -423,6 +460,8 @@ async def main():
 
         except Exception as e:
             print(f"\n❌ ERROR: {e}")
+            import traceback
+            traceback.print_exc()
             await db.rollback()
             raise
 
