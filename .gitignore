@@ -28,7 +28,6 @@ ENV/
 .venv/
 
 # IDEs
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -61,4 +60,4 @@ docker-compose.override.yml
 *.sqlite3
 
 # Alembic
-alembic/versions/*.pyc
+#alembic/versions/*.pyc
