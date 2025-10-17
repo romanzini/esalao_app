@@ -317,12 +317,12 @@ async def test_get_booking_by_id_not_found(
 
 @pytest.mark.asyncio
 async def test_update_booking_status_success(
-    authenticated_client: AsyncClient,
+    admin_client: AsyncClient,
     auth_user,
     db_session: AsyncSession,
     test_data: dict,
 ):
-    """Test updating booking status."""
+    """Test updating booking status (requires admin or professional role)."""
     booking = Booking(
         client_id=auth_user.id,
         professional_id=test_data["professional"].id,
@@ -335,7 +335,7 @@ async def test_update_booking_status_success(
     db_session.add(booking)
     await db_session.commit()
 
-    response = await authenticated_client.patch(
+    response = await admin_client.patch(
         f"/v1/bookings/{booking.id}/status",
         json={"status": BookingStatus.CONFIRMED.value},
     )
@@ -434,8 +434,12 @@ async def test_cancel_booking_endpoint(
         params={"cancellation_reason": "User requested cancellation"},
     )
 
-    assert response.status_code == 200
-    data = response.json()
+    assert response.status_code == 204
+
+    # Verify booking was cancelled by fetching it
+    verify_response = await authenticated_client.get(f"/v1/bookings/{booking.id}")
+    assert verify_response.status_code == 200
+    data = verify_response.json()
     assert data["status"] == BookingStatus.CANCELLED.value
     assert data["cancellation_reason"] == "User requested cancellation"
 
