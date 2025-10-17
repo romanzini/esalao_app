@@ -1,0 +1,10 @@
+# Performance test results
+results/
+*.html
+*.csv
+*_stats.json
+*_failures.json
+*_exceptions.json
+
+# Locust logs
+*.log
