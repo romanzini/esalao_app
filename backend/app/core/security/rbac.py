@@ -13,6 +13,7 @@ from backend.app.db.session import get_db
 
 # HTTP Bearer token scheme for Authorization header
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
@@ -81,6 +82,53 @@ async def get_current_active_user(
     This is an alias dependency for clarity in endpoint signatures.
     """
     return current_user
+
+
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_optional),
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    """
+    Get current authenticated user from JWT token if provided.
+
+    Returns None if no token is provided or if token is invalid.
+    Use this for endpoints that should be accessible both authenticated
+    and unauthenticated, but may behave differently based on auth status.
+
+    Args:
+        credentials: HTTP Authorization credentials (Bearer token), optional
+        db: Database session
+
+    Returns:
+        User | None: Current authenticated user or None if not authenticated
+    """
+    if not credentials:
+        return None
+
+    try:
+        token = credentials.credentials
+
+        # Verify and decode JWT token
+        payload = verify_token(token, token_type="access")
+        if not payload:
+            return None
+
+        user_id = payload.sub
+        if not user_id:
+            return None
+
+        # Get user from database
+        repo = UserRepository(db)
+        user = await repo.get_by_id(int(user_id))
+
+        if not user or not user.is_active:
+            return None
+
+        return user
+
+    except Exception:
+        # Silently fail and return None for optional authentication
+        return None
 
 
 def require_role(required_role: UserRole) -> Callable:
@@ -158,6 +206,7 @@ require_professional_or_staff = require_any_role(
 __all__ = [
     "get_current_user",
     "get_current_active_user",
+    "get_current_user_optional",
     "require_role",
     "require_any_role",
     "require_admin",

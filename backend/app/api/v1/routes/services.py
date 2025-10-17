@@ -9,7 +9,10 @@ from backend.app.api.v1.schemas.service import (
     ServiceResponse,
     ServiceUpdateRequest,
 )
-from backend.app.core.security.rbac import get_current_user
+from backend.app.core.security.rbac import (
+    get_current_user,
+    get_current_user_optional,
+)
 from backend.app.db.models.user import User
 from backend.app.db.repositories.salon import SalonRepository
 from backend.app.db.repositories.service import ServiceRepository
@@ -99,21 +102,21 @@ async def create_service(
     "",
     response_model=ServiceListResponse,
     summary="List services",
-    description="List services with optional filters. All authenticated users can list services.",
+    description="List services with optional filters. Available to all users (authenticated or not).",
 )
 async def list_services(
+    db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
     salon_id: int | None = Query(None, description="Filter by salon ID"),
     category: str | None = Query(None, description="Filter by category"),
     is_active: bool | None = Query(None, description="Filter by active status"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
 ) -> ServiceListResponse:
     """
     List services with optional filters.
 
-    All authenticated users can list services.
+    Available to all users (authenticated or not).
     Results are paginated.
     """
     service_repo = ServiceRepository(db)
@@ -150,17 +153,17 @@ async def list_services(
     "/{service_id}",
     response_model=ServiceResponse,
     summary="Get service by ID",
-    description="Get a single service by its ID. All authenticated users can view services.",
+    description="Get a single service by its ID. Available to all users (authenticated or not).",
 )
 async def get_service(
     service_id: int,
-    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
 ) -> ServiceResponse:
     """
     Get a service by ID.
 
-    All authenticated users can view services.
+    Available to all users (authenticated or not).
     """
     service_repo = ServiceRepository(db)
     service = await service_repo.get_by_id(service_id)

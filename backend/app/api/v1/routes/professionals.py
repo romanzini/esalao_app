@@ -11,7 +11,12 @@ from backend.app.api.v1.schemas.professional import (
     ProfessionalResponse,
     ProfessionalUpdateRequest,
 )
-from backend.app.core.security.rbac import get_current_user
+from backend.app.core.security.rbac import (
+    get_current_user,
+    get_current_user_optional,
+    require_any_role,
+    require_staff,
+)
 from backend.app.db.models.user import User
 from backend.app.db.session import get_db
 from backend.app.db.repositories.professional import ProfessionalRepository
@@ -145,8 +150,8 @@ async def create_professional(
     },
 )
 async def list_professionals(
-    current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User | None, Depends(get_current_user_optional)] = None,
     salon_id: Annotated[int | None, Query(description="Filter by salon ID", ge=1)] = None,
     page: Annotated[int, Query(description="Page number", ge=1)] = 1,
     page_size: Annotated[int, Query(description="Items per page", ge=1, le=100)] = 10,
@@ -154,7 +159,7 @@ async def list_professionals(
     """
     List professionals with optional filtering.
 
-    Available to all authenticated users.
+    Available to all users (authenticated or not).
     """
     prof_repo = ProfessionalRepository(db)
 
@@ -211,13 +216,13 @@ async def list_professionals(
 )
 async def get_professional(
     professional_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User | None, Depends(get_current_user_optional)] = None,
 ) -> ProfessionalResponse:
     """
     Get professional by ID.
 
-    Available to all authenticated users.
+    Available to all users (authenticated or not).
     """
     prof_repo = ProfessionalRepository(db)
 
