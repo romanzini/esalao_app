@@ -1,7 +1,7 @@
 """Professional model for service providers."""
 
 from sqlalchemy import String, ForeignKey, ARRAY
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
 
@@ -69,22 +69,12 @@ class Professional(Base, IDMixin, TimestampMixin):
     )
 
     # Relationships
-    # user: Mapped["User"] = relationship(
-    #     back_populates="professional",
-    #     lazy="selectin",
-    # )
-    # salon: Mapped["Salon"] = relationship(
-    #     back_populates="professionals",
-    #     lazy="selectin",
-    # )
-    # availabilities: Mapped[list["Availability"]] = relationship(
-    #     back_populates="professional",
-    #     lazy="selectin",
-    # )
-    # bookings: Mapped[list["Booking"]] = relationship(
-    #     back_populates="professional",
-    #     lazy="selectin",
-    # )
+    user: Mapped["User"] = relationship(
+        lazy="selectin",
+    )
+    salon: Mapped["Salon"] = relationship(
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         """String representation of Professional."""

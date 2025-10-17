@@ -11,7 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum as SQLEnum,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
 
@@ -133,23 +133,20 @@ class Booking(Base, IDMixin, TimestampMixin):
     )
 
     # Relationships
-    # client: Mapped["User"] = relationship(
-    #     foreign_keys=[client_id],
-    #     back_populates="bookings",
-    #     lazy="selectin",
-    # )
-    # professional: Mapped["Professional"] = relationship(
-    #     back_populates="bookings",
-    #     lazy="selectin",
-    # )
-    # service: Mapped["Service"] = relationship(
-    #     back_populates="bookings",
-    #     lazy="selectin",
-    # )
-    # cancelled_by: Mapped["User"] = relationship(
-    #     foreign_keys=[cancelled_by_id],
-    #     lazy="selectin",
-    # )
+    client: Mapped["User"] = relationship(
+        foreign_keys=[client_id],
+        lazy="selectin",
+    )
+    professional: Mapped["Professional"] = relationship(
+        lazy="selectin",
+    )
+    service: Mapped["Service"] = relationship(
+        lazy="selectin",
+    )
+    cancelled_by: Mapped["User"] = relationship(
+        foreign_keys=[cancelled_by_id],
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         """String representation of Booking."""
