@@ -1,6 +1,6 @@
 """Authentication endpoints (register, login, refresh)."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +11,7 @@ from backend.app.api.v1.schemas.auth import (
     TokenResponse,
     UserResponse,
 )
+from backend.app.core.rate_limit import limiter
 from backend.app.core.security import (
     hash_password,
     verify_password,
@@ -32,7 +33,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     summary="Register new user",
     description=(
         "Create a new user account and return authentication tokens. "
-        "Email must be unique and password must be at least 8 characters."
+        "Email must be unique and password must be at least 8 characters. "
+        "**Rate limit: 3 requests per minute per IP.**"
     ),
     responses={
         201: {
@@ -74,7 +76,9 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
         },
     },
 )
+@limiter.limit("3/minute")
 async def register(
+    request: Request,
     user_data: UserRegisterRequest,
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
@@ -112,7 +116,8 @@ async def register(
     summary="Login user",
     description=(
         "Authenticate user with email and password. "
-        "Returns access and refresh tokens on success."
+        "Returns access and refresh tokens on success. "
+        "**Rate limit: 5 requests per minute per IP.**"
     ),
     responses={
         200: {
@@ -146,7 +151,9 @@ async def register(
         },
     },
 )
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     credentials: UserLoginRequest,
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
