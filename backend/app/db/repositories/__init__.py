@@ -7,6 +7,7 @@ from backend.app.db.repositories.salon import SalonRepository
 from backend.app.db.repositories.service import ServiceRepository
 from backend.app.db.repositories.user import UserRepository
 from backend.app.db.repositories.waitlist import WaitlistRepository
+from backend.app.db.repositories.loyalty import LoyaltyRepository
 
 __all__ = [
     "AvailabilityRepository",
