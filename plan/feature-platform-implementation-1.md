@@ -352,10 +352,13 @@ Tabela de rastreabilidade entre cada TASK do plano e as issues (GH-xxx). Tarefas
 ## 3. Progress Summary
 
 ### Phase 0: Fundações (13/13 = 100%) ✅
+
 Todas as tarefas de infraestrutura base, observabilidade e pipeline CI/CD concluídas.
 
 ### Phase 1: Auth, Entidades, Agenda Básica (15/15 = 100%) ✅
+
 **Concluídas (15):**
+
 - TASK-0100: Model User + hashing Argon2 ✅
 - TASK-0101: JWT utils + refresh rotation ✅
 - TASK-0102: Endpoints auth (login/register/refresh) ✅
@@ -373,7 +376,9 @@ Todas as tarefas de infraestrutura base, observabilidade e pipeline CI/CD conclu
 - TASK-0114: Endpoint service (16/16 tests = 100%) ✅
 
 ### Phase 2: Pagamentos & Notificações (13/13 = 100%) ✅
+
 **Concluídas (13):**
+
 - TASK-0200: Interface PaymentProvider ✅
 - TASK-0201: Implement provider Stripe/Mock ✅
 - TASK-0202: Models Payment, Refund + enums status ✅
@@ -459,5 +464,3 @@ Critérios de validação automáticos recomendados:
 - Cada PR referencia pelo menos 1 TASK e 1 GH issue correspondente.
 - Nenhum TASK permanece sem issue (exceto marcados FOUNDATION ou PER/SEC específicos).
 - Métrica rastreabilidade: 100% das issues GH-xxx possuem ao menos 1 TASK associado (verificar via script futuro).
-
-
