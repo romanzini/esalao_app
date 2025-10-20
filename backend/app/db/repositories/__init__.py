@@ -6,6 +6,7 @@ from backend.app.db.repositories.professional import ProfessionalRepository
 from backend.app.db.repositories.salon import SalonRepository
 from backend.app.db.repositories.service import ServiceRepository
 from backend.app.db.repositories.user import UserRepository
+from backend.app.db.repositories.waitlist import WaitlistRepository
 
 __all__ = [
     "AvailabilityRepository",

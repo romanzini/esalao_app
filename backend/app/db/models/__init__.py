@@ -11,6 +11,7 @@ from .payment import Payment, Refund, PaymentWebhookEvent, PaymentStatus, Paymen
 from .payment_log import PaymentLog, PaymentLogLevel, PaymentLogType
 from .payment_metrics import PaymentMetricsSnapshot, ProviderPerformanceMetrics, PaymentAlert
 from .cancellation_policy import CancellationPolicy, CancellationTier, CancellationPolicyStatus
+from .waitlist import Waitlist, WaitlistStatus, WaitlistPriority
 
 __all__ = [
     "Base",
@@ -39,4 +40,7 @@ __all__ = [
     "CancellationPolicy",
     "CancellationTier",
     "CancellationPolicyStatus",
+    "Waitlist",
+    "WaitlistStatus",
+    "WaitlistPriority",
 ]
