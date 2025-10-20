@@ -144,6 +144,21 @@ class Booking(Base, IDMixin, TimestampMixin):
         nullable=True,
         comment="When client was marked as no-show",
     )
+    marked_no_show_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="User who marked the booking as no-show",
+    )
+    no_show_fee_amount: Mapped[float | None] = mapped_column(
+        Numeric(10, 2),
+        nullable=True,
+        comment="No-show fee charged (BRL)",
+    )
+    no_show_reason: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        comment="Reason for marking as no-show",
+    )
 
     # Relationships
     client: Mapped["User"] = relationship(
@@ -161,6 +176,10 @@ class Booking(Base, IDMixin, TimestampMixin):
         lazy="selectin",
     )
     cancellation_policy: Mapped["CancellationPolicy"] = relationship(
+        lazy="selectin",
+    )
+    marked_no_show_by: Mapped["User | None"] = relationship(
+        foreign_keys=[marked_no_show_by_id],
         lazy="selectin",
     )
     payments: Mapped[list["Payment"]] = relationship(

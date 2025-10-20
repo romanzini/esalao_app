@@ -332,3 +332,80 @@ class BookingRepository:
         stmt = select(Booking.id).where(Booking.id == booking_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none() is not None
+
+    async def find_by_criteria(
+        self,
+        status: BookingStatus | None = None,
+        unit_id: int | None = None,
+        professional_id: int | None = None,
+        client_id: int | None = None,
+        service_id: int | None = None,
+        scheduled_after: datetime | None = None,
+        scheduled_before: datetime | None = None,
+        exclude_no_show: bool = False,
+        include_no_show_only: bool = False,
+        limit: int | None = None,
+    ) -> list[Booking]:
+        """
+        Find bookings by multiple criteria.
+
+        Args:
+            status: Filter by booking status
+            unit_id: Filter by unit ID
+            professional_id: Filter by professional ID
+            client_id: Filter by client ID
+            service_id: Filter by service ID
+            scheduled_after: Filter bookings scheduled after this time
+            scheduled_before: Filter bookings scheduled before this time
+            exclude_no_show: Exclude bookings marked as no-show
+            include_no_show_only: Include only bookings marked as no-show
+            limit: Maximum number of results
+
+        Returns:
+            List of matching bookings
+        """
+        stmt = select(Booking).options(
+            selectinload(Booking.client),
+            selectinload(Booking.professional),
+            selectinload(Booking.service),
+        )
+
+        conditions = []
+
+        if status:
+            conditions.append(Booking.status == status)
+
+        if unit_id:
+            conditions.append(Booking.unit_id == unit_id)
+
+        if professional_id:
+            conditions.append(Booking.professional_id == professional_id)
+
+        if client_id:
+            conditions.append(Booking.client_id == client_id)
+
+        if service_id:
+            conditions.append(Booking.service_id == service_id)
+
+        if scheduled_after:
+            conditions.append(Booking.scheduled_at >= scheduled_after)
+
+        if scheduled_before:
+            conditions.append(Booking.scheduled_at <= scheduled_before)
+
+        if exclude_no_show:
+            conditions.append(Booking.marked_no_show_at.is_(None))
+
+        if include_no_show_only:
+            conditions.append(Booking.marked_no_show_at.is_not(None))
+
+        if conditions:
+            stmt = stmt.where(and_(*conditions))
+
+        stmt = stmt.order_by(Booking.scheduled_at.desc())
+
+        if limit:
+            stmt = stmt.limit(limit)
+
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())

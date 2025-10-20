@@ -14,6 +14,13 @@ from backend.app.api.v1.schemas.booking import (
     CancellationFeeResponse,
     BookingCancellationRequest,
     BookingCancellationResponse,
+    NoShowEvaluationRequest,
+    NoShowEvaluationResponse,
+    NoShowMarkRequest,
+    NoShowMarkResponse,
+    NoShowDisputeRequest,
+    NoShowDisputeResponse,
+    NoShowStatisticsResponse,
 )
 from backend.app.core.security.rbac import get_current_user
 from backend.app.db.models.booking import BookingStatus
@@ -21,9 +28,12 @@ from backend.app.db.models.user import User, UserRole
 from backend.app.db.repositories.booking import BookingRepository
 from backend.app.db.repositories.service import ServiceRepository
 from backend.app.db.repositories.cancellation_policy import CancellationPolicyRepository
+from backend.app.db.repositories.user import UserRepository
 from backend.app.db.session import get_db
 from backend.app.domain.scheduling.services.slot_service import SlotService
 from backend.app.domain.policies.booking_cancellation import BookingCancellationService
+from backend.app.services.no_show import NoShowService
+from backend.app.domain.policies.no_show import NoShowReason
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -645,3 +655,331 @@ async def check_can_cancel(
 
     result = await cancellation_service.can_cancel_booking(booking_id)
     return result
+
+
+# No-Show Management Endpoints
+
+@router.post(
+    "/{booking_id}/no-show/evaluate",
+    response_model=NoShowEvaluationResponse,
+    summary="Evaluate booking for no-show",
+    description="""
+    Evaluate if a booking should be marked as no-show based on current time and policy.
+
+    This endpoint:
+    - Checks if booking meets no-show criteria
+    - Calculates potential no-show fee
+    - Returns evaluation details without marking the booking
+    - Requires PROFESSIONAL or ADMIN role
+    """,
+)
+async def evaluate_no_show(
+    booking_id: int,
+    request: NoShowEvaluationRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Evaluate booking for no-show marking."""
+
+    # Check permissions
+    if current_user.role not in [UserRole.PROFESSIONAL, UserRole.ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only professionals and admins can evaluate no-shows",
+        )
+
+    # Initialize repositories and services
+    booking_repo = BookingRepository(session)
+    user_repo = UserRepository(session)
+    no_show_service = NoShowService(booking_repo, user_repo)
+
+    try:
+        evaluation = await no_show_service.evaluate_booking_for_no_show(
+            booking_id, request.evaluation_time
+        )
+
+        return NoShowEvaluationResponse(
+            booking_id=booking_id,
+            should_mark_no_show=evaluation.should_mark_no_show,
+            reason=evaluation.reason,
+            fee_amount=evaluation.fee_amount,
+            fee_calculation=evaluation.fee_calculation,
+            detection_time=evaluation.detection_time,
+            grace_period_expired=evaluation.grace_period_expired,
+            minutes_late=evaluation.minutes_late,
+            policy_id=evaluation.policy_id,
+            auto_detected=evaluation.auto_detected,
+            can_dispute=evaluation.can_dispute,
+            dispute_deadline=evaluation.dispute_deadline,
+            recommended_action=evaluation.recommended_action,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{booking_id}/no-show/mark",
+    response_model=NoShowMarkResponse,
+    summary="Mark booking as no-show",
+    description="""
+    Mark a booking as no-show with optional fee.
+
+    This endpoint:
+    - Marks the booking as no-show
+    - Applies fee based on policy or manual override
+    - Records who marked it and when
+    - Updates booking status
+    - Requires PROFESSIONAL or ADMIN role
+    """,
+)
+async def mark_no_show(
+    booking_id: int,
+    request: NoShowMarkRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Mark booking as no-show."""
+
+    # Check permissions
+    if current_user.role not in [UserRole.PROFESSIONAL, UserRole.ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only professionals and admins can mark no-shows",
+        )
+
+    # Initialize repositories and services
+    booking_repo = BookingRepository(session)
+    user_repo = UserRepository(session)
+    no_show_service = NoShowService(booking_repo, user_repo)
+
+    try:
+        booking = await no_show_service.mark_booking_no_show(
+            booking_id=booking_id,
+            marked_by_id=current_user.id,
+            reason=request.reason,
+            manual_fee_amount=request.manual_fee_amount,
+            reason_notes=request.reason_notes,
+            current_time=request.marked_at,
+        )
+
+        return NoShowMarkResponse(
+            booking_id=booking_id,
+            marked_at=booking.marked_no_show_at,
+            marked_by_id=booking.marked_no_show_by_id,
+            reason=booking.no_show_reason,
+            fee_amount=float(booking.no_show_fee_amount or 0),
+            status=booking.status,
+            message="Booking marked as no-show successfully",
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{booking_id}/no-show/dispute",
+    response_model=NoShowDisputeResponse,
+    summary="Dispute no-show marking",
+    description="""
+    Dispute a no-show marking within the allowed time window.
+
+    This endpoint:
+    - Allows clients to dispute no-show markings
+    - Validates dispute window hasn't expired
+    - Records dispute details for review
+    - Only the booking client can dispute
+    """,
+)
+async def dispute_no_show(
+    booking_id: int,
+    request: NoShowDisputeRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Dispute no-show marking."""
+
+    # Initialize repositories and services
+    booking_repo = BookingRepository(session)
+    user_repo = UserRepository(session)
+    no_show_service = NoShowService(booking_repo, user_repo)
+
+    # Check if user can dispute
+    dispute_check = await no_show_service.can_dispute_no_show(
+        booking_id, current_user.id
+    )
+
+    if not dispute_check["can_dispute"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot dispute no-show: {dispute_check['reason']}",
+        )
+
+    try:
+        booking = await no_show_service.dispute_no_show(
+            booking_id=booking_id,
+            disputed_by_id=current_user.id,
+            dispute_reason=request.dispute_reason,
+        )
+
+        return NoShowDisputeResponse(
+            booking_id=booking_id,
+            disputed_at=datetime.utcnow(),
+            disputed_by_id=current_user.id,
+            dispute_reason=request.dispute_reason,
+            status="dispute_filed",
+            message="Dispute filed successfully and will be reviewed",
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.get(
+    "/{booking_id}/no-show/can-dispute",
+    summary="Check if no-show can be disputed",
+    description="""
+    Check if a no-show marking can be disputed by the current user.
+
+    Returns dispute eligibility, deadline, and remaining time.
+    """,
+)
+async def can_dispute_no_show(
+    booking_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Check if no-show can be disputed."""
+
+    # Initialize repositories and services
+    booking_repo = BookingRepository(session)
+    user_repo = UserRepository(session)
+    no_show_service = NoShowService(booking_repo, user_repo)
+
+    try:
+        result = await no_show_service.can_dispute_no_show(
+            booking_id, current_user.id
+        )
+        return result
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.get(
+    "/no-show/statistics",
+    response_model=NoShowStatisticsResponse,
+    summary="Get no-show statistics",
+    description="""
+    Get no-show statistics for a specific period and filters.
+
+    This endpoint:
+    - Returns no-show rates and counts
+    - Provides financial impact data
+    - Breaks down by reasons
+    - Supports filtering by unit, professional, date range
+    - Requires PROFESSIONAL or ADMIN role
+    """,
+)
+async def get_no_show_statistics(
+    unit_id: int = Query(None, description="Filter by unit ID"),
+    professional_id: int = Query(None, description="Filter by professional ID"),
+    start_date: datetime = Query(None, description="Start date for statistics"),
+    end_date: datetime = Query(None, description="End date for statistics"),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Get no-show statistics."""
+
+    # Check permissions
+    if current_user.role not in [UserRole.PROFESSIONAL, UserRole.ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only professionals and admins can view statistics",
+        )
+
+    # Initialize repositories and services
+    booking_repo = BookingRepository(session)
+    user_repo = UserRepository(session)
+    no_show_service = NoShowService(booking_repo, user_repo)
+
+    try:
+        stats = await no_show_service.get_no_show_statistics(
+            unit_id=unit_id,
+            professional_id=professional_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        return NoShowStatisticsResponse(**stats)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/no-show/auto-detect",
+    summary="Run auto no-show detection",
+    description="""
+    Run automatic no-show detection for recent bookings.
+
+    This endpoint:
+    - Scans recent bookings for no-show conditions
+    - Automatically marks qualifying bookings as no-show
+    - Returns summary of actions taken
+    - Requires ADMIN role
+    """,
+)
+async def auto_detect_no_shows(
+    time_window_hours: int = Query(24, ge=1, le=168, description="Hours to look back"),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Run automatic no-show detection."""
+
+    # Check permissions - only admins can run auto-detection
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can run auto no-show detection",
+        )
+
+    # Initialize repositories and services
+    booking_repo = BookingRepository(session)
+    user_repo = UserRepository(session)
+    no_show_service = NoShowService(booking_repo, user_repo)
+
+    try:
+        results = await no_show_service.auto_detect_no_shows(time_window_hours)
+
+        summary = {
+            "time_window_hours": time_window_hours,
+            "total_processed": len(results),
+            "marked_no_show": len([r for r in results if r["action"] == "marked_no_show"]),
+            "no_action": len([r for r in results if r["action"] == "no_action"]),
+            "errors": len([r for r in results if r["action"] == "error"]),
+            "results": results,
+        }
+
+        return summary
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

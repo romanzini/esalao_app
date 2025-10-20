@@ -1,10 +1,12 @@
 """Booking API schemas."""
 
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 from backend.app.db.models.booking import BookingStatus
+from backend.app.domain.policies.no_show import NoShowReason
 
 
 class BookingCreateRequest(BaseModel):
@@ -204,3 +206,209 @@ class BookingListResponse(BaseModel):
     total: int = Field(..., description="Total number of bookings")
     page: int = Field(default=1, description="Current page number")
     page_size: int = Field(default=10, description="Number of items per page")
+
+
+# No-Show Management Schemas
+
+class NoShowEvaluationRequest(BaseModel):
+    """Request to evaluate booking for no-show."""
+
+    evaluation_time: Optional[datetime] = Field(
+        default=None,
+        description="Time to evaluate against (defaults to current time)"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "evaluation_time": "2024-01-15T10:30:00Z"
+            }
+        }
+    }
+
+
+class NoShowEvaluationResponse(BaseModel):
+    """Response from no-show evaluation."""
+
+    booking_id: int = Field(..., description="Booking ID evaluated")
+    should_mark_no_show: bool = Field(..., description="Whether booking should be marked as no-show")
+    reason: Optional[NoShowReason] = Field(None, description="Reason for no-show if applicable")
+    fee_amount: float = Field(..., description="Calculated no-show fee")
+    fee_calculation: Dict[str, Any] = Field(default_factory=dict, description="Fee calculation details")
+
+    # Timing details
+    detection_time: datetime = Field(..., description="Time when evaluation was performed")
+    grace_period_expired: bool = Field(..., description="Whether grace period has expired")
+    minutes_late: int = Field(..., description="Minutes late from scheduled time")
+
+    # Policy info
+    policy_id: int = Field(..., description="Policy ID used for evaluation")
+    auto_detected: bool = Field(..., description="Whether this was auto-detected")
+
+    # Dispute info
+    can_dispute: bool = Field(..., description="Whether marking can be disputed")
+    dispute_deadline: Optional[datetime] = Field(None, description="Deadline for disputing")
+    recommended_action: str = Field(..., description="Recommended next action")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "booking_id": 123,
+                "should_mark_no_show": True,
+                "reason": "client_no_show",
+                "fee_amount": 25.0,
+                "fee_calculation": {
+                    "base_price": 50.0,
+                    "rule": {"base_percentage": 50.0},
+                    "final_amount": 25.0
+                },
+                "detection_time": "2024-01-15T10:30:00Z",
+                "grace_period_expired": True,
+                "minutes_late": 30,
+                "policy_id": 1,
+                "auto_detected": True,
+                "can_dispute": True,
+                "dispute_deadline": "2024-01-16T10:30:00Z",
+                "recommended_action": "mark_no_show"
+            }
+        }
+    }
+
+
+class NoShowMarkRequest(BaseModel):
+    """Request to mark booking as no-show."""
+
+    reason: NoShowReason = Field(..., description="Reason for marking as no-show")
+    manual_fee_amount: Optional[float] = Field(
+        None,
+        ge=0,
+        description="Manual fee override (uses policy calculation if not provided)"
+    )
+    reason_notes: Optional[str] = Field(
+        None,
+        max_length=200,
+        description="Additional notes about the no-show"
+    )
+    marked_at: Optional[datetime] = Field(
+        None,
+        description="Time when marked (defaults to current time)"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "reason": "client_no_show",
+                "manual_fee_amount": 30.0,
+                "reason_notes": "Client did not arrive and did not respond to calls",
+                "marked_at": "2024-01-15T10:30:00Z"
+            }
+        }
+    }
+
+
+class NoShowMarkResponse(BaseModel):
+    """Response from marking booking as no-show."""
+
+    booking_id: int = Field(..., description="Booking ID marked")
+    marked_at: datetime = Field(..., description="When booking was marked as no-show")
+    marked_by_id: int = Field(..., description="User ID who marked the no-show")
+    reason: str = Field(..., description="Reason for no-show")
+    fee_amount: float = Field(..., description="Fee amount applied")
+    status: BookingStatus = Field(..., description="Updated booking status")
+    message: str = Field(..., description="Success message")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "booking_id": 123,
+                "marked_at": "2024-01-15T10:30:00Z",
+                "marked_by_id": 456,
+                "reason": "client_no_show",
+                "fee_amount": 25.0,
+                "status": "no_show",
+                "message": "Booking marked as no-show successfully"
+            }
+        }
+    }
+
+
+class NoShowDisputeRequest(BaseModel):
+    """Request to dispute no-show marking."""
+
+    dispute_reason: str = Field(
+        ...,
+        min_length=10,
+        max_length=500,
+        description="Reason for disputing the no-show marking"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "dispute_reason": "I arrived on time but the professional was not available. I waited for 20 minutes."
+            }
+        }
+    }
+
+
+class NoShowDisputeResponse(BaseModel):
+    """Response from disputing no-show."""
+
+    booking_id: int = Field(..., description="Booking ID disputed")
+    disputed_at: datetime = Field(..., description="When dispute was filed")
+    disputed_by_id: int = Field(..., description="User ID who filed dispute")
+    dispute_reason: str = Field(..., description="Reason for dispute")
+    status: str = Field(..., description="Dispute status")
+    message: str = Field(..., description="Response message")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "booking_id": 123,
+                "disputed_at": "2024-01-15T11:00:00Z",
+                "disputed_by_id": 789,
+                "dispute_reason": "I arrived on time but the professional was not available",
+                "status": "dispute_filed",
+                "message": "Dispute filed successfully and will be reviewed"
+            }
+        }
+    }
+
+
+class NoShowStatisticsResponse(BaseModel):
+    """Response with no-show statistics."""
+
+    period: Dict[str, datetime] = Field(..., description="Statistics period")
+    totals: Dict[str, Any] = Field(..., description="Total counts and rates")
+    financial: Dict[str, float] = Field(..., description="Financial impact data")
+    reasons: Dict[str, int] = Field(..., description="Breakdown by reason")
+    filters: Dict[str, Any] = Field(..., description="Applied filters")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "period": {
+                    "start": "2024-01-01T00:00:00Z",
+                    "end": "2024-01-31T23:59:59Z"
+                },
+                "totals": {
+                    "bookings": 150,
+                    "no_shows": 15,
+                    "no_show_rate": 10.0
+                },
+                "financial": {
+                    "total_fees_charged": 375.0,
+                    "average_fee": 25.0
+                },
+                "reasons": {
+                    "client_no_show": 12,
+                    "professional_no_show": 2,
+                    "client_late_excessive": 1
+                },
+                "filters": {
+                    "unit_id": None,
+                    "professional_id": None
+                }
+            }
+        }
+    }
