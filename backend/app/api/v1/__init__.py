@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from backend.app.api.v1.routes import auth, bookings, professionals, scheduling, services, payments, webhooks, refunds, payment_metrics
+from backend.app.api.v1.routes import auth, bookings, professionals, scheduling, services, payments, webhooks, refunds, payment_metrics, waitlist, loyalty, notifications
 
 api_router = APIRouter(prefix="/v1")
 
@@ -16,5 +16,8 @@ api_router.include_router(payments.router)
 api_router.include_router(webhooks.router)
 api_router.include_router(refunds.router)
 api_router.include_router(payment_metrics.router)
+api_router.include_router(waitlist.router)
+api_router.include_router(loyalty.router)
+api_router.include_router(notifications.router)
 
 __all__ = ["api_router"]

@@ -16,6 +16,10 @@ from .loyalty import (
     LoyaltyAccount, PointTransaction, LoyaltyReward,
     PointTransactionType, LoyaltyTier, PointEarnReason, PointRedemptionType
 )
+from .notifications import (
+    NotificationPreferences, NotificationTemplate, NotificationQueue, NotificationLog,
+    NotificationChannel, NotificationEventType, NotificationPriority, NotificationStatus
+)
 
 __all__ = [
     "Base",
@@ -54,4 +58,12 @@ __all__ = [
     "LoyaltyTier",
     "PointEarnReason",
     "PointRedemptionType",
+    "NotificationPreferences",
+    "NotificationTemplate",
+    "NotificationQueue",
+    "NotificationLog",
+    "NotificationChannel",
+    "NotificationEventType",
+    "NotificationPriority",
+    "NotificationStatus",
 ]

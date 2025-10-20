@@ -8,6 +8,7 @@ from backend.app.db.repositories.service import ServiceRepository
 from backend.app.db.repositories.user import UserRepository
 from backend.app.db.repositories.waitlist import WaitlistRepository
 from backend.app.db.repositories.loyalty import LoyaltyRepository
+from backend.app.db.repositories.notifications import NotificationRepository
 
 __all__ = [
     "AvailabilityRepository",
@@ -16,4 +17,7 @@ __all__ = [
     "SalonRepository",
     "ServiceRepository",
     "UserRepository",
+    "WaitlistRepository",
+    "LoyaltyRepository",
+    "NotificationRepository",
 ]

@@ -100,6 +100,17 @@ class User(Base, IDMixin, TimestampMixin):
         lazy="selectin",
     )
 
+    # Notification relationships
+    notification_preferences: Mapped[list["NotificationPreferences"]] = relationship(
+        back_populates="user",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+    notifications: Mapped[list["NotificationQueue"]] = relationship(
+        back_populates="user",
+        lazy="selectin",
+    )
+
     def __repr__(self) -> str:
         """String representation of User."""
         return (
