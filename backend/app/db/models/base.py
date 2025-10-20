@@ -1,9 +1,10 @@
 """Base SQLAlchemy models and mixins."""
 
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime, func, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 
@@ -41,3 +42,14 @@ class IDMixin:
     """Mixin to add integer primary key id."""
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+
+class UUIDMixin:
+    """Mixin to add UUID string primary key id."""
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+        nullable=False
+    )

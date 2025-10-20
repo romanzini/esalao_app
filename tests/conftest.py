@@ -1,14 +1,55 @@
-"""Pytest configuration and fixtures."""
+"""
+Pytest configuration and fixtures for unit tests.
+"""
 
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+import asyncio
+from decimal import Decimal
+from datetime import datetime
+from unittest.mock import Mock, AsyncMock
+from typing import Generator, AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession
+from httpx import AsyncClient
+from fastapi.testclient import TestClient
 
-from backend.app.core.config import settings
-from backend.app.db.models.base import Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
+
 from backend.app.main import app
+from backend.app.db.models.base import Base
+from backend.app.db.session import get_db, get_sync_db
+from backend.app.db.models.payment import Payment, Refund, PaymentWebhookEvent
+from backend.app.db.models.payment_log import PaymentLog
+from backend.app.domain.payments.provider import (
+    PaymentMethod,
+    PaymentStatus,
+    PaymentRequest,
+    PaymentResponse,
+    RefundRequest,
+    RefundResponse,
+    WebhookEvent,
+)
+from backend.app.domain.payments import RefundStatus
+from backend.app.domain.notifications.service import NotificationContext
+
+
+# Test database URL (in-memory SQLite for tests)
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+
+# Create test engine
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    poolclass=StaticPool,
+    connect_args={
+        "check_same_thread": False,
+    },
+)
+
+# Create test session factory
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture(scope="session")

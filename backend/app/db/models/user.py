@@ -5,12 +5,12 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from sqlalchemy import String, DateTime, Enum as SQLEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
 
 if TYPE_CHECKING:
-    pass  # Relationships will be added in future tasks
+    from backend.app.db.models.payment import Payment
 
 
 class UserRole(str, Enum):
@@ -95,6 +95,10 @@ class User(Base, IDMixin, TimestampMixin):
     #     back_populates="client",
     #     lazy="selectin",
     # )
+    payments: Mapped[list["Payment"]] = relationship(
+        back_populates="user",
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         """String representation of User."""

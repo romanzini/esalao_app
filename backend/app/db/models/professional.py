@@ -1,7 +1,9 @@
 """Professional model for service providers."""
 
-from sqlalchemy import String, ForeignKey, ARRAY
+from sqlalchemy import String, ForeignKey, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
+import json
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
 
@@ -35,8 +37,8 @@ class Professional(Base, IDMixin, TimestampMixin):
     )
 
     # Professional information
-    specialties: Mapped[list[str]] = mapped_column(
-        ARRAY(String),
+    specialties: Mapped[List[str]] = mapped_column(
+        JSON,
         nullable=False,
         default=list,
         comment="List of specialties (e.g., haircut, manicure, massage)",

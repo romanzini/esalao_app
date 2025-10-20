@@ -147,6 +147,10 @@ class Booking(Base, IDMixin, TimestampMixin):
         foreign_keys=[cancelled_by_id],
         lazy="selectin",
     )
+    payments: Mapped[list["Payment"]] = relationship(
+        back_populates="booking",
+        lazy="selectin",
+    )
 
     def __repr__(self) -> str:
         """String representation of Booking."""
