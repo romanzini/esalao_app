@@ -33,6 +33,7 @@ from backend.app.db.session import get_db
 from backend.app.domain.scheduling.services.slot_service import SlotService
 from backend.app.domain.policies.booking_cancellation import BookingCancellationService
 from backend.app.services.no_show import NoShowService
+from backend.app.services.booking_notifications import BookingNotificationService
 from backend.app.domain.policies.no_show import NoShowReason
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
@@ -151,6 +152,25 @@ async def create_booking(
 
     await session.commit()
     await session.refresh(booking)
+
+    # 4. Send notifications
+    try:
+        notification_service = BookingNotificationService(session)
+
+        # Send booking confirmation notifications
+        await notification_service.notify_booking_created(
+            booking_id=booking.id,
+            correlation_id=f"booking_create_{booking.id}"
+        )
+
+        # Schedule booking reminders
+        await notification_service.schedule_booking_reminders(
+            booking_id=booking.id
+        )
+
+    except Exception as e:
+        # Log notification errors but don't fail the booking creation
+        logger.error(f"Failed to send booking notifications for booking {booking.id}: {str(e)}")
 
     return BookingResponse.model_validate(booking)
 
@@ -470,6 +490,18 @@ async def cancel_booking(
 
     await session.commit()
 
+    # Send cancellation notifications
+    try:
+        notification_service = BookingNotificationService(session)
+        await notification_service.notify_booking_cancelled(
+            booking_id=booking_id,
+            cancellation_reason=cancellation_reason,
+            correlation_id=f"booking_cancel_{booking_id}"
+        )
+    except Exception as e:
+        # Log notification errors but don't fail the cancellation
+        logger.error(f"Failed to send cancellation notifications for booking {booking_id}: {str(e)}")
+
 
 @router.get(
     "/{booking_id}/cancellation-fee",
@@ -591,6 +623,20 @@ async def cancel_booking_with_policy(
         )
 
         await session.commit()
+
+        # Send cancellation notifications
+        try:
+            notification_service = BookingNotificationService(session)
+            await notification_service.notify_booking_cancelled(
+                booking_id=booking_id,
+                cancellation_reason=request.reason,
+                refund_amount=result['refund_amount'],
+                cancellation_fee=result['cancellation_fee'],
+                correlation_id=f"booking_cancel_policy_{booking_id}"
+            )
+        except Exception as e:
+            # Log notification errors but don't fail the cancellation
+            logger.error(f"Failed to send cancellation notifications for booking {booking_id}: {str(e)}")
 
         return BookingCancellationResponse(
             success=result['success'],

@@ -23,6 +23,7 @@ from backend.app.domain.payments import (
     PaymentProviderError,
     PaymentProviderUnavailableError,
 )
+from backend.app.services.payment_notifications import PaymentNotificationService
 
 # TODO: Import payment service when implemented
 # from backend.app.domain.payments.services.payment_service import PaymentService
@@ -130,6 +131,27 @@ async def create_payment(
         #     booking_id=payment_data.booking_id,
         #     idempotency_key=payment_data.idempotency_key
         # )
+        #
+        # # Send payment notifications based on method and status
+        # try:
+        #     notification_service = PaymentNotificationService(db)
+        #     if payment.status == PaymentStatus.CONFIRMED:
+        #         await notification_service.notify_payment_received(
+        #             payment_id=payment.id,
+        #             correlation_id=f"payment_create_{payment.id}"
+        #         )
+        #     elif payment.status == PaymentStatus.PENDING:
+        #         await notification_service.notify_payment_pending(
+        #             payment_id=payment.id,
+        #             payment_method=payment_data.payment_method,
+        #             correlation_id=f"payment_create_{payment.id}"
+        #         )
+        # except Exception as e:
+        #     # Log notification error but don't fail the payment creation
+        #     import logging
+        #     logger = logging.getLogger(__name__)
+        #     logger.error(f"Failed to send payment notification for payment {payment.id}: {str(e)}")
+        #
         # return PaymentResponse.from_orm(payment)
 
         # Placeholder response for now
@@ -214,10 +236,32 @@ async def check_payment_status(
     try:
         # TODO: Implement payment service integration
         # payment_service = PaymentService(db)
+        # old_status = await payment_service.get_payment_status(payment_id)
         # payment = await payment_service.refresh_payment_status(
         #     payment_id=payment_id,
         #     user_id=current_user.id if current_user.role != UserRole.ADMIN else None
         # )
+        #
+        # # Send notifications if status changed
+        # try:
+        #     notification_service = PaymentNotificationService(db)
+        #     if old_status != payment.status:
+        #         if payment.status == PaymentStatus.CONFIRMED:
+        #             await notification_service.notify_payment_received(
+        #                 payment_id=payment.id,
+        #                 correlation_id=f"payment_status_check_{payment.id}"
+        #             )
+        #         elif payment.status == PaymentStatus.FAILED:
+        #             await notification_service.notify_payment_failed(
+        #                 payment_id=payment.id,
+        #                 correlation_id=f"payment_status_check_{payment.id}"
+        #             )
+        # except Exception as e:
+        #     # Log notification error but don't fail the status check
+        #     import logging
+        #     logger = logging.getLogger(__name__)
+        #     logger.error(f"Failed to send payment status notification for payment {payment.id}: {str(e)}")
+        #
         # return PaymentStatusResponse.from_orm(payment)
 
         # Placeholder response for now
