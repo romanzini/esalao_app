@@ -47,6 +47,90 @@ class BookingStatusUpdate(BaseModel):
     )
 
 
+class CancellationFeeRequest(BaseModel):
+    """Request to calculate cancellation fee."""
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "cancellation_time": "2025-10-19T15:00:00",
+            }
+        }
+    }
+
+    cancellation_time: datetime | None = Field(
+        None,
+        description="When cancellation would occur (default: now)",
+    )
+
+
+class CancellationFeeResponse(BaseModel):
+    """Response with cancellation fee calculation."""
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "fee_amount": 15.00,
+                "tier_name": "Standard (24-72h)",
+                "allows_refund": True,
+                "policy_name": "Default Platform Policy",
+                "advance_hours": 48,
+                "refund_amount": 35.00,
+            }
+        }
+    }
+
+    fee_amount: float = Field(..., description="Cancellation fee amount (BRL)")
+    tier_name: str = Field(..., description="Applied tier name")
+    allows_refund: bool = Field(..., description="Whether refund is allowed")
+    policy_name: str = Field(..., description="Policy name used")
+    advance_hours: int = Field(..., description="Hours of advance notice")
+    refund_amount: float = Field(..., description="Amount to be refunded (BRL)")
+
+
+class BookingCancellationRequest(BaseModel):
+    """Request to cancel a booking."""
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "reason": "Client emergency",
+                "cancellation_time": "2025-10-19T15:00:00",
+            }
+        }
+    }
+
+    reason: str = Field(..., max_length=500, description="Cancellation reason")
+    cancellation_time: datetime | None = Field(
+        None,
+        description="When cancellation occurs (default: now)",
+    )
+
+
+class BookingCancellationResponse(BaseModel):
+    """Response after booking cancellation."""
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "success": True,
+                "message": "Booking cancelled with Standard (24-72h) fee",
+                "cancellation_fee": 15.00,
+                "refund_amount": 35.00,
+                "payment_required": False,
+                "policy_applied": "Default Platform Policy",
+            }
+        }
+    }
+
+    success: bool = Field(..., description="Whether cancellation succeeded")
+    message: str = Field(..., description="Cancellation result message")
+    cancellation_fee: float = Field(..., description="Fee charged (BRL)")
+    refund_amount: float = Field(..., description="Amount refunded (BRL)")
+    payment_required: bool = Field(..., description="If additional payment needed")
+    policy_applied: str = Field(..., description="Policy name used")
+
+
 class BookingResponse(BaseModel):
     """Response with booking details."""
 
@@ -84,6 +168,8 @@ class BookingResponse(BaseModel):
     notes: str | None = Field(None, description="Booking notes")
     cancellation_reason: str | None = Field(None, description="Cancellation reason")
     cancelled_at: datetime | None = Field(None, description="Cancellation timestamp")
+    cancellation_fee_amount: float | None = Field(None, description="Cancellation fee (BRL)")
+    cancellation_policy_id: int | None = Field(None, description="Applied policy ID")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 

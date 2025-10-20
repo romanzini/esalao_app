@@ -61,6 +61,14 @@ class Booking(Base, IDMixin, TimestampMixin):
         comment="Service to be performed",
     )
 
+    # Cancellation policy relationship
+    cancellation_policy_id: Mapped[int | None] = mapped_column(
+        ForeignKey("cancellation_policies.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+        comment="Cancellation policy applied to this booking",
+    )
+
     # Scheduling
     scheduled_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -117,6 +125,11 @@ class Booking(Base, IDMixin, TimestampMixin):
         nullable=True,
         comment="User who cancelled the booking",
     )
+    cancellation_fee_amount: Mapped[float | None] = mapped_column(
+        Numeric(10, 2),
+        nullable=True,
+        comment="Cancellation fee charged (BRL)",
+    )
 
     # Completion tracking
     completed_at: Mapped[datetime | None] = mapped_column(
@@ -145,6 +158,9 @@ class Booking(Base, IDMixin, TimestampMixin):
     )
     cancelled_by: Mapped["User"] = relationship(
         foreign_keys=[cancelled_by_id],
+        lazy="selectin",
+    )
+    cancellation_policy: Mapped["CancellationPolicy"] = relationship(
         lazy="selectin",
     )
     payments: Mapped[list["Payment"]] = relationship(

@@ -102,19 +102,6 @@ class Salon(Base, IDMixin, TimestampMixin):
         comment="Salon owner (user with SALON_OWNER role)",
     )
 
-    # owner: Mapped["User"] = relationship(
-    #     back_populates="salons",
-    #     lazy="selectin",
-    # )
-    # professionals: Mapped[list["Professional"]] = relationship(
-    #     back_populates="salon",
-    #     lazy="selectin",
-    # )
-    # services: Mapped[list["Service"]] = relationship(
-    #     back_populates="salon",
-    #     lazy="selectin",
-    # )
-
     def __repr__(self) -> str:
         """String representation of Salon."""
         return f"<Salon(id={self.id}, name='{self.name}', cnpj='{self.cnpj}')>"

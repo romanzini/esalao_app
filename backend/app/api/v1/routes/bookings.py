@@ -10,14 +10,20 @@ from backend.app.api.v1.schemas.booking import (
     BookingListResponse,
     BookingResponse,
     BookingStatusUpdate,
+    CancellationFeeRequest,
+    CancellationFeeResponse,
+    BookingCancellationRequest,
+    BookingCancellationResponse,
 )
 from backend.app.core.security.rbac import get_current_user
 from backend.app.db.models.booking import BookingStatus
 from backend.app.db.models.user import User, UserRole
 from backend.app.db.repositories.booking import BookingRepository
 from backend.app.db.repositories.service import ServiceRepository
+from backend.app.db.repositories.cancellation_policy import CancellationPolicyRepository
 from backend.app.db.session import get_db
 from backend.app.domain.scheduling.services.slot_service import SlotService
+from backend.app.domain.policies.booking_cancellation import BookingCancellationService
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -453,3 +459,189 @@ async def cancel_booking(
     )
 
     await session.commit()
+
+
+@router.get(
+    "/{booking_id}/cancellation-fee",
+    response_model=CancellationFeeResponse,
+    summary="Calculate cancellation fee",
+    description="""
+    Calculate the cancellation fee for a booking based on its policy.
+
+    This endpoint:
+    - Calculates fee based on advance notice and policy rules
+    - Shows which tier would be applied
+    - Indicates if refund is allowed
+    - Does not modify the booking
+
+    **Authentication Required:** Client (own bookings), Professional, Receptionist, or Admin
+    """,
+    responses={
+        200: {"description": "Fee calculated successfully"},
+        403: {"description": "Access forbidden"},
+        404: {"description": "Booking not found"},
+    },
+)
+async def get_cancellation_fee(
+    booking_id: int,
+    request: CancellationFeeRequest = None,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> CancellationFeeResponse:
+    """Calculate cancellation fee for a booking."""
+    booking_repo = BookingRepository(session)
+    policy_repo = CancellationPolicyRepository(session)
+    cancellation_service = BookingCancellationService(booking_repo, policy_repo)
+
+    # Verify booking exists and user has permission
+    booking = await booking_repo.get_by_id(booking_id)
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Booking with ID {booking_id} not found",
+        )
+
+    # Check permissions
+    if current_user.role == UserRole.CLIENT and booking.client_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to view this booking's fee",
+        )
+
+    try:
+        cancellation_time = request.cancellation_time if request else None
+        fee_info = await cancellation_service.calculate_cancellation_fee(
+            booking_id, cancellation_time
+        )
+
+        return CancellationFeeResponse(**fee_info)
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{booking_id}/cancel-with-policy",
+    response_model=BookingCancellationResponse,
+    summary="Cancel booking with policy",
+    description="""
+    Cancel a booking applying cancellation policy and fees.
+
+    This endpoint:
+    - Calculates and applies cancellation fee based on policy
+    - Updates booking status to CANCELLED
+    - Records fee amount and policy used
+    - Determines refund amount
+    - Tracks who cancelled and when
+
+    **Authentication Required:** Client (own bookings), Professional, Receptionist, or Admin
+    """,
+    responses={
+        200: {"description": "Booking cancelled successfully"},
+        400: {"description": "Cannot cancel booking"},
+        403: {"description": "Access forbidden"},
+        404: {"description": "Booking not found"},
+    },
+)
+async def cancel_booking_with_policy(
+    booking_id: int,
+    request: BookingCancellationRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> BookingCancellationResponse:
+    """Cancel a booking with policy-based fee calculation."""
+    booking_repo = BookingRepository(session)
+    policy_repo = CancellationPolicyRepository(session)
+    cancellation_service = BookingCancellationService(booking_repo, policy_repo)
+
+    # Verify booking exists and user has permission
+    booking = await booking_repo.get_by_id(booking_id)
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Booking with ID {booking_id} not found",
+        )
+
+    # Check permissions
+    if current_user.role == UserRole.CLIENT and booking.client_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to cancel this booking",
+        )
+
+    try:
+        result = await cancellation_service.cancel_booking(
+            booking_id=booking_id,
+            cancelled_by_id=current_user.id,
+            reason=request.reason,
+            cancellation_time=request.cancellation_time,
+        )
+
+        await session.commit()
+
+        return BookingCancellationResponse(
+            success=result['success'],
+            message=result['message'],
+            cancellation_fee=float(result['cancellation_fee']),
+            refund_amount=float(result['refund_amount']),
+            payment_required=result['payment_required'],
+            policy_applied=result['policy_applied'],
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.get(
+    "/{booking_id}/can-cancel",
+    summary="Check if booking can be cancelled",
+    description="""
+    Check if a booking can be cancelled and preview the cancellation details.
+
+    This endpoint:
+    - Validates if cancellation is allowed
+    - Shows preview of fees that would be applied
+    - Does not modify the booking
+    - Useful for UI confirmation dialogs
+
+    **Authentication Required:** Client (own bookings), Professional, Receptionist, or Admin
+    """,
+    responses={
+        200: {"description": "Cancellation check completed"},
+        403: {"description": "Access forbidden"},
+        404: {"description": "Booking not found"},
+    },
+)
+async def check_can_cancel(
+    booking_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> dict:
+    """Check if a booking can be cancelled."""
+    booking_repo = BookingRepository(session)
+    policy_repo = CancellationPolicyRepository(session)
+    cancellation_service = BookingCancellationService(booking_repo, policy_repo)
+
+    # Verify booking exists and user has permission
+    booking = await booking_repo.get_by_id(booking_id)
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Booking with ID {booking_id} not found",
+        )
+
+    # Check permissions
+    if current_user.role == UserRole.CLIENT and booking.client_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to check this booking",
+        )
+
+    result = await cancellation_service.can_cancel_booking(booking_id)
+    return result
