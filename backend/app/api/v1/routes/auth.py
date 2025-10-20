@@ -9,6 +9,7 @@ from backend.app.api.v1.schemas.auth import (
     UserLoginRequest,
     RefreshTokenRequest,
     TokenResponse,
+    AuthTokenResponse,
     UserResponse,
 )
 from backend.app.core.rate_limit import limiter
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post(
     "/register",
-    response_model=TokenResponse,
+    response_model=AuthTokenResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register new user",
     description=(
@@ -81,7 +82,7 @@ async def register(
     request: Request,
     user_data: UserRegisterRequest,
     db: AsyncSession = Depends(get_db),
-) -> TokenResponse:
+) -> AuthTokenResponse:
     """Register a new user and return access tokens."""
     user_repo = UserRepository(db)
 
@@ -107,7 +108,10 @@ async def register(
     # Generate tokens
     tokens = create_token_pair(user.id, user.role.value)
 
-    return TokenResponse(**tokens)
+    return AuthTokenResponse(
+        **tokens,
+        user=UserResponse.model_validate(user)
+    )
 
 
 @router.post(

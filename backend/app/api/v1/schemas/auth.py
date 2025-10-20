@@ -90,3 +90,24 @@ class UserResponse(BaseModel):
     updated_at: datetime = Field(..., description="Last update timestamp")
 
     model_config = {"from_attributes": True}
+
+
+class AuthTokenResponse(BaseModel):
+    """Response schema for authentication endpoints with user data."""
+
+    access_token: str = Field(
+        ...,
+        description="JWT access token",
+    )
+    refresh_token: str = Field(
+        ...,
+        description="JWT refresh token",
+    )
+    token_type: str = Field(
+        default="bearer",
+        description="Token type (always 'bearer')",
+    )
+    user: UserResponse = Field(
+        ...,
+        description="User information",
+    )

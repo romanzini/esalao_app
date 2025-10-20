@@ -75,7 +75,7 @@ setup_tracing(app)
 app.state.limiter = limiter
 
 # Include API routers
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
 
 
 @app.get("/health", tags=["Health"])
