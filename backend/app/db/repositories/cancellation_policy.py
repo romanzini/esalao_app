@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, select, delete
 
 from backend.app.db.models.cancellation_policy import (
     CancellationPolicy,
@@ -262,3 +262,98 @@ class CancellationTierRepository:
             return True
         except Exception:
             return False
+
+    async def list_policies(
+        self,
+        salon_id: Optional[int] = None,
+        status: Optional[CancellationPolicyStatus] = None,
+        is_default: Optional[bool] = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> List[CancellationPolicy]:
+        """List cancellation policies with optional filtering."""
+        query = select(CancellationPolicy)
+        
+        if salon_id is not None:
+            query = query.where(CancellationPolicy.salon_id == salon_id)
+        
+        if status is not None:
+            query = query.where(CancellationPolicy.status == status)
+        
+        if is_default is not None:
+            query = query.where(CancellationPolicy.is_default == is_default)
+        
+        query = query.offset(skip).limit(limit).order_by(CancellationPolicy.created_at.desc())
+        
+        result = await self.db.execute(query)
+        return result.scalars().all()
+
+    async def update_policy_status(
+        self,
+        policy_id: int,
+        status: CancellationPolicyStatus,
+    ) -> Optional[CancellationPolicy]:
+        """Update policy status."""
+        policy = await self.get_by_id(policy_id)
+        if not policy:
+            return None
+        
+        policy.status = status
+        policy.updated_at = datetime.utcnow()
+        
+        await self.db.flush()
+        await self.db.refresh(policy)
+        return policy
+
+    async def delete_policy_tiers(self, policy_id: int) -> bool:
+        """Delete all tiers for a policy."""
+        try:
+            query = delete(CancellationTier).where(CancellationTier.policy_id == policy_id)
+            await self.db.execute(query)
+            await self.db.flush()
+            return True
+        except Exception:
+            return False
+
+    async def delete_policy(self, policy_id: int) -> bool:
+        """Delete a policy and all its tiers."""
+        try:
+            # First delete tiers
+            await self.delete_policy_tiers(policy_id)
+            
+            # Then delete policy
+            query = delete(CancellationPolicy).where(CancellationPolicy.id == policy_id)
+            await self.db.execute(query)
+            await self.db.flush()
+            return True
+        except Exception:
+            return False
+
+    async def get_applicable_policy(self, salon_id: Optional[int] = None) -> Optional[CancellationPolicy]:
+        """
+        Get the applicable cancellation policy for a booking.
+        
+        Priority order:
+        1. Active salon-specific policy
+        2. Default policy
+        """
+        # First try to get salon-specific policy
+        if salon_id:
+            query = select(CancellationPolicy).where(
+                and_(
+                    CancellationPolicy.salon_id == salon_id,
+                    CancellationPolicy.status == CancellationPolicyStatus.ACTIVE,
+                    or_(
+                        CancellationPolicy.effective_until.is_(None),
+                        CancellationPolicy.effective_until > datetime.utcnow()
+                    )
+                )
+            ).order_by(CancellationPolicy.effective_from.desc())
+            
+            result = await self.db.execute(query)
+            salon_policy = result.scalar_one_or_none()
+            if salon_policy:
+                return salon_policy
+        
+        # Fall back to default policy
+        return await self.get_default_policy()

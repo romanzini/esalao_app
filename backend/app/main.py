@@ -13,6 +13,7 @@ from backend.app.core.metrics import (
 )
 from backend.app.core.rate_limit import limiter
 from backend.app.core.tracing import setup_tracing
+from backend.app.middleware.audit import AuditMiddleware
 from backend.app.api.v1 import api_router
 
 
@@ -67,6 +68,7 @@ A API utiliza **JWT Bearer Tokens** para autenticação.
 
 # Add middlewares
 app.add_middleware(PrometheusMiddleware)
+app.add_middleware(AuditMiddleware)
 
 # Setup tracing
 setup_tracing(app)

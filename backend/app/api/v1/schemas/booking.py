@@ -175,6 +175,11 @@ class BookingResponse(BaseModel):
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
+    # Optional cancellation policy information
+    cancellation_policy_name: str | None = Field(None, description="Cancellation policy name")
+    can_cancel: bool | None = Field(None, description="Whether booking can be cancelled")
+    estimated_cancellation_fee: float | None = Field(None, description="Estimated fee if cancelled now")
+
 
 class BookingListResponse(BaseModel):
     """Response with list of bookings."""

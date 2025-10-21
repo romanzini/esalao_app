@@ -1,5 +1,6 @@
 """Booking endpoints for reservation management."""
 
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -35,6 +36,8 @@ from backend.app.domain.policies.booking_cancellation import BookingCancellation
 from backend.app.services.no_show import NoShowService
 from backend.app.services.booking_notifications import BookingNotificationService
 from backend.app.domain.policies.no_show import NoShowReason
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -139,7 +142,13 @@ async def create_booking(
             detail=str(e),
         ) from e
 
-    # 3. Create booking
+    # 3. Determine applicable cancellation policy
+    policy_repo = CancellationPolicyRepository(session)
+    applicable_policy = await policy_repo.get_applicable_policy(
+        salon_id=service.salon_id if hasattr(service, 'salon_id') else None
+    )
+
+    # 4. Create booking
     booking = await booking_repo.create(
         client_id=current_user.id,
         professional_id=request.professional_id,
@@ -148,12 +157,13 @@ async def create_booking(
         duration_minutes=service.duration_minutes,
         service_price=float(service.price),
         notes=request.notes,
+        cancellation_policy_id=applicable_policy.id if applicable_policy else None,
     )
 
     await session.commit()
     await session.refresh(booking)
 
-    # 4. Send notifications
+    # 5. Send notifications
     try:
         notification_service = BookingNotificationService(session)
 
@@ -651,6 +661,85 @@ async def cancel_booking_with_policy(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
+        )
+
+
+@router.get(
+    "/{booking_id}/cancellation-fee",
+    response_model=CancellationFeeResponse,
+    summary="Calculate cancellation fee",
+    description="""
+    Calculate the cancellation fee for a booking based on current policy.
+
+    This endpoint:
+    - Calculates fee based on the applicable cancellation policy
+    - Shows different scenarios based on cancellation timing
+    - Helps clients understand potential costs before cancelling
+    - Returns fee information without actually cancelling the booking
+
+    **Authentication Required:** Client (own bookings), Professional, Receptionist, or Admin
+    """,
+    responses={
+        200: {"description": "Cancellation fee calculated successfully"},
+        403: {"description": "Access forbidden"},
+        404: {"description": "Booking not found"},
+    },
+)
+async def calculate_cancellation_fee(
+    booking_id: int,
+    cancellation_time: datetime = Query(None, description="Hypothetical cancellation time (defaults to now)"),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> CancellationFeeResponse:
+    """Calculate cancellation fee for a booking."""
+    booking_repo = BookingRepository(session)
+    policy_repo = CancellationPolicyRepository(session)
+    cancellation_service = BookingCancellationService(booking_repo, policy_repo)
+
+    # Verify booking exists and user has permission
+    booking = await booking_repo.get_by_id(booking_id)
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Booking with ID {booking_id} not found",
+        )
+
+    # Check permissions
+    if current_user.role == UserRole.CLIENT and booking.client_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to check this booking",
+        )
+
+    try:
+        # Use provided cancellation time or current time
+        cancel_time = cancellation_time or datetime.utcnow()
+        
+        # Calculate cancellation fee
+        fee_result = await cancellation_service.calculate_cancellation_fee(
+            booking_id=booking_id,
+            cancellation_time=cancel_time,
+        )
+
+        return CancellationFeeResponse(
+            fee_amount=float(fee_result['fee_amount']),
+            refund_amount=float(fee_result['refund_amount']),
+            tier_name=fee_result['tier_name'],
+            policy_name=fee_result['policy_name'],
+            advance_hours=fee_result['advance_hours'],
+            allows_refund=fee_result['allows_refund'],
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Failed to calculate cancellation fee for booking {booking_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate cancellation fee"
         )
 
 

@@ -22,6 +22,7 @@ from backend.app.db.models.payment import Payment, PaymentMethod  # noqa: F401
 from backend.app.db.models.payment_log import PaymentLog  # noqa: F401
 from backend.app.db.models.payment_metrics import PaymentMetricsSnapshot, ProviderPerformanceMetrics, PaymentAlert  # noqa: F401
 from backend.app.db.models.cancellation_policy import CancellationPolicy, CancellationTier  # noqa: F401
+from backend.app.db.models.audit_event import AuditEvent  # noqa: F401
 
 # Alembic Config object
 config = context.config
