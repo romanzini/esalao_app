@@ -1,9 +1,13 @@
 """Salon model for beauty establishments."""
 
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
+
+if TYPE_CHECKING:
+    from backend.app.db.models.overbooking import OverbookingConfig
 
 
 class Salon(Base, IDMixin, TimestampMixin):
@@ -100,6 +104,13 @@ class Salon(Base, IDMixin, TimestampMixin):
         nullable=False,
         index=True,
         comment="Salon owner (user with SALON_OWNER role)",
+    )
+
+    # Overbooking configurations for this salon
+    overbooking_configs: Mapped[list["OverbookingConfig"]] = relationship(
+        "OverbookingConfig",
+        back_populates="salon",
+        lazy="select"
     )
 
     def __repr__(self) -> str:

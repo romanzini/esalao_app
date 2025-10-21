@@ -7,6 +7,7 @@ from .professional import Professional
 from .service import Service
 from .availability import Availability
 from .booking import Booking, BookingStatus
+from .overbooking import OverbookingConfig, OverbookingScope, OverbookingTimeframe
 from .payment import Payment, Refund, PaymentWebhookEvent, PaymentStatus, PaymentMethod, RefundStatus
 from .payment_log import PaymentLog, PaymentLogLevel, PaymentLogType
 from .payment_metrics import PaymentMetricsSnapshot, ProviderPerformanceMetrics, PaymentAlert

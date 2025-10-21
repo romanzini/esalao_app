@@ -9,18 +9,19 @@ from decimal import Decimal
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock
 from typing import Generator, AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, Session
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
+from httpx import ASGITransport
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
-from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.app.db.models.base import Base
 from backend.app.db.session import get_db, get_sync_db
+from backend.app.core.config import settings
 from backend.app.db.models.payment import Payment, Refund, PaymentWebhookEvent
 from backend.app.db.models.payment_log import PaymentLog
 from backend.app.domain.payments.provider import (

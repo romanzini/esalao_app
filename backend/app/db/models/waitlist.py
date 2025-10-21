@@ -223,7 +223,7 @@ class Waitlist(Base):
     @property
     def is_active(self) -> bool:
         """Check if waitlist entry is still active."""
-        return self.status == WaitlistStatus.ACTIVE
+        return self.status == WaitlistStatus.WAITING
 
     @property
     def has_pending_offer(self) -> bool:
@@ -240,7 +240,7 @@ class Waitlist(Base):
     def can_receive_offer(self) -> bool:
         """Check if this entry can receive a new offer."""
         return (
-            self.status == WaitlistStatus.ACTIVE and
+            self.status == WaitlistStatus.WAITING and
             not self.has_pending_offer and
             not self.is_offer_expired
         )

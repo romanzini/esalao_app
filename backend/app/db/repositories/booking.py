@@ -244,6 +244,106 @@ class BookingRepository:
 
         return conflicting is not None
 
+    async def find_overlapping_bookings(
+        self,
+        professional_id: int,
+        start_time: datetime,
+        end_time: datetime,
+        exclude_statuses: list[BookingStatus] | None = None,
+        exclude_booking_id: int | None = None,
+    ) -> list[Booking]:
+        """
+        Find bookings that overlap with a given time range.
+
+        Args:
+            professional_id: Professional ID
+            start_time: Start of time range
+            end_time: End of time range
+            exclude_statuses: Optional list of statuses to exclude
+            exclude_booking_id: Optional booking ID to exclude
+
+        Returns:
+            List of overlapping bookings
+        """
+        from datetime import timedelta
+
+        stmt = select(Booking).where(
+            and_(
+                Booking.professional_id == professional_id,
+                or_(
+                    # Booking starts before range ends AND booking ends after range starts
+                    and_(
+                        Booking.scheduled_at < end_time,
+                        Booking.scheduled_at + timedelta(minutes=Booking.duration_minutes) > start_time,
+                    )
+                ),
+            )
+        )
+
+        if exclude_statuses:
+            stmt = stmt.where(~Booking.status.in_(exclude_statuses))
+
+        if exclude_booking_id:
+            stmt = stmt.where(Booking.id != exclude_booking_id)
+
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def find_by_criteria(
+        self,
+        professional_id: int | None = None,
+        salon_id: int | None = None,
+        service_id: int | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        include_completed: bool = False,
+        statuses: list[BookingStatus] | None = None,
+    ) -> list[Booking]:
+        """
+        Find bookings by various criteria.
+
+        Args:
+            professional_id: Optional professional ID filter
+            salon_id: Optional salon ID filter
+            service_id: Optional service ID filter
+            start_date: Optional start date filter
+            end_date: Optional end date filter
+            include_completed: Whether to include completed bookings
+            statuses: Optional list of specific statuses to include
+
+        Returns:
+            List of matching bookings
+        """
+        conditions = []
+
+        if professional_id:
+            conditions.append(Booking.professional_id == professional_id)
+
+        if service_id:
+            conditions.append(Booking.service_id == service_id)
+
+        if start_date:
+            conditions.append(Booking.scheduled_at >= datetime.combine(start_date, datetime.min.time()))
+
+        if end_date:
+            conditions.append(Booking.scheduled_at <= datetime.combine(end_date, datetime.max.time()))
+
+        if statuses:
+            conditions.append(Booking.status.in_(statuses))
+        elif not include_completed:
+            # Exclude completed and cancelled by default
+            conditions.append(~Booking.status.in_([BookingStatus.COMPLETED, BookingStatus.CANCELLED]))
+
+        # TODO: Add salon_id filter when Professional model has salon relationship
+
+        if conditions:
+            stmt = select(Booking).where(and_(*conditions))
+        else:
+            stmt = select(Booking)
+
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def update_status(
         self,
         booking_id: int,

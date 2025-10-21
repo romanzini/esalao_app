@@ -1,9 +1,13 @@
 """Service model for beauty services catalog."""
 
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Text, Integer, Numeric, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
+
+if TYPE_CHECKING:
+    from backend.app.db.models.overbooking import OverbookingConfig
 
 
 class Service(Base, IDMixin, TimestampMixin):
@@ -87,6 +91,13 @@ class Service(Base, IDMixin, TimestampMixin):
     #     back_populates="service",
     #     lazy="selectin",
     # )
+    
+    # Overbooking configurations for this service
+    overbooking_configs: Mapped[list["OverbookingConfig"]] = relationship(
+        "OverbookingConfig",
+        back_populates="service",
+        lazy="select"
+    )
 
     def __repr__(self) -> str:
         """String representation of Service."""

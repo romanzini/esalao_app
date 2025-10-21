@@ -2,16 +2,14 @@
 
 import pytest
 from datetime import datetime, timedelta
-from uuid import uuid4
 
 from backend.app.db.models.waitlist import Waitlist, WaitlistStatus, WaitlistPriority
 from backend.app.db.models.user import User, UserRole
 from backend.app.db.models.professional import Professional
 from backend.app.db.models.service import Service
-from backend.app.db.models.unit import Unit
+from backend.app.db.models.salon import Salon
 from backend.app.db.repositories.waitlist import WaitlistRepository
 from backend.app.services.waitlist import WaitlistService
-from backend.app.core.exceptions import ValidationError, NotFoundError
 
 
 class TestWaitlistModel:

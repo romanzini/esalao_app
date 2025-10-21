@@ -1,7 +1,7 @@
 """Slot calculation service for scheduling."""
 
 from datetime import date, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +10,7 @@ from backend.app.db.repositories.availability import AvailabilityRepository
 from backend.app.db.repositories.booking import BookingRepository
 from backend.app.db.repositories.service import ServiceRepository
 from backend.app.domain.scheduling.schemas import SlotResponse, TimeSlot
+from backend.app.services.overbooking import OverbookingService
 
 if TYPE_CHECKING:
     from backend.app.db.models.availability import Availability
@@ -31,6 +32,7 @@ class SlotService:
         self.availability_repo = AvailabilityRepository(session)
         self.booking_repo = BookingRepository(session)
         self.service_repo = ServiceRepository(session)
+        self.overbooking_service = OverbookingService(session)
 
     async def calculate_available_slots(
         self,
@@ -276,6 +278,69 @@ class SlotService:
                 return True
 
         return False
+
+    async def check_slot_availability_with_overbooking(
+        self,
+        professional_id: int,
+        scheduled_at: datetime,
+        service_id: int,
+        salon_id: Optional[int] = None,
+    ) -> tuple[bool, dict]:
+        """
+        Check if a specific time slot is available considering overbooking.
+
+        Args:
+            professional_id: ID of the professional
+            scheduled_at: Proposed booking datetime
+            service_id: ID of the service
+            salon_id: Optional salon ID for overbooking config
+
+        Returns:
+            Tuple of (is_available, capacity_info)
+        """
+        # Get service details
+        service = await self.service_repo.get_by_id(service_id)
+        if not service:
+            raise ValueError(f"Service with ID {service_id} not found")
+
+        # Check basic availability first
+        basic_availability = await self.check_slot_availability(
+            professional_id=professional_id,
+            scheduled_at=scheduled_at,
+            service_id=service_id,
+        )
+
+        if basic_availability:
+            # Slot is available without overbooking
+            return True, {
+                "available": True,
+                "overbooking_used": False,
+                "message": "Slot available within normal capacity"
+            }
+
+        # Check if overbooking can accommodate this booking
+        can_accept, capacity_info = await self.overbooking_service.can_accept_booking(
+            professional_id=professional_id,
+            target_datetime=scheduled_at,
+            service_duration_minutes=service.duration_minutes,
+            salon_id=salon_id,
+            service_id=service_id
+        )
+
+        if can_accept:
+            return True, {
+                "available": True,
+                "overbooking_used": True,
+                "capacity_info": capacity_info,
+                "message": "Slot available through overbooking"
+            }
+        else:
+            return False, {
+                "available": False,
+                "overbooking_used": False,
+                "capacity_info": capacity_info,
+                "message": "Slot not available even with overbooking"
+            }
 
     async def get_next_available_slot(
         self,

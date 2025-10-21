@@ -32,9 +32,10 @@ class TestWaitlistModel:
             professional_id=1,
             service_id=1,
             unit_id=1,
-            preferred_date=datetime(2025, 1, 15, 10, 0),
+            preferred_datetime=datetime(2025, 1, 15, 10, 0),
             status=WaitlistStatus.WAITING,
-            priority=WaitlistPriority.NORMAL
+            priority=WaitlistPriority.NORMAL,
+            position=1
         )
 
         assert waitlist.status == WaitlistStatus.WAITING
@@ -51,16 +52,17 @@ class TestWaitlistModel:
             professional_id=1,
             service_id=1,
             unit_id=1,
-            preferred_date=datetime(2025, 1, 15, 10, 0),
+            preferred_datetime=datetime(2025, 1, 15, 10, 0),
             status=WaitlistStatus.WAITING,
-            priority=WaitlistPriority.NORMAL
+            priority=WaitlistPriority.NORMAL,
+            position=1
         )
 
         # Test is_active for waiting status
         assert waitlist.is_active is True
 
         # Test can_receive_offer for waiting status
-        assert waitlist.can_receive_offer is True
+        assert waitlist.can_receive_offer() is True
 
         # Test inactive status
         waitlist.status = WaitlistStatus.ACCEPTED
@@ -68,7 +70,7 @@ class TestWaitlistModel:
 
         # Test cannot receive offer when already offered
         waitlist.status = WaitlistStatus.OFFERED
-        assert waitlist.can_receive_offer is False
+        assert waitlist.can_receive_offer() is False
 
 
 if __name__ == "__main__":

@@ -1,11 +1,16 @@
 """Professional model for service providers."""
 
+from typing import List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
 import json
 
 from backend.app.db.models.base import Base, IDMixin, TimestampMixin
+
+if TYPE_CHECKING:
+    from backend.app.db.models.overbooking import OverbookingConfig
+    from backend.app.db.models.user import User
+    from backend.app.db.models.salon import Salon
 
 
 class Professional(Base, IDMixin, TimestampMixin):
@@ -76,6 +81,13 @@ class Professional(Base, IDMixin, TimestampMixin):
     )
     salon: Mapped["Salon"] = relationship(
         lazy="selectin",
+    )
+    
+    # Overbooking configurations for this professional
+    overbooking_configs: Mapped[list["OverbookingConfig"]] = relationship(
+        "OverbookingConfig",
+        back_populates="professional",
+        lazy="select"
     )
 
     def __repr__(self) -> str:
