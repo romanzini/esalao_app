@@ -111,3 +111,28 @@ class AuthTokenResponse(BaseModel):
         ...,
         description="User information",
     )
+
+
+class PasswordResetRequest(BaseModel):
+    """Request schema for password reset."""
+
+    email: EmailStr = Field(
+        ...,
+        description="User email address",
+        examples=["user@example.com"],
+    )
+
+
+class PasswordChangeRequest(BaseModel):
+    """Request schema for password change."""
+
+    current_password: str = Field(
+        ...,
+        description="Current password",
+    )
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="New password (min 8 characters)",
+    )

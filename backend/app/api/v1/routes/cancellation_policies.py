@@ -27,7 +27,7 @@ from backend.app.domain.policies.cancellation import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/cancellation-policies", tags=["cancellation-policies"])
+router = APIRouter(prefix="/cancellation-policies", tags=["🎯 Policies - Cancellation Policies"])
 security = HTTPBearer()
 
 

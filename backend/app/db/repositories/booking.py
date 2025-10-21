@@ -417,7 +417,7 @@ class BookingRepository:
         self,
         cutoff_time: datetime,
         limit: int = 1000,
-    ) -> List[Booking]:
+    ) -> list[Booking]:
         """
         Find bookings eligible for no-show detection.
 

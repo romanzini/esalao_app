@@ -17,7 +17,7 @@ from backend.app.services.loyalty import LoyaltyService
 from backend.app.db.repositories.loyalty import LoyaltyRepository
 from backend.app.db.repositories.booking import BookingRepository
 from backend.app.db.repositories.user import UserRepository
-from backend.app.db.session import get_db_session
+from backend.app.db.session import get_db
 from backend.app.core.security.rbac import require_role, get_current_user
 from backend.app.db.models.user import UserRole
 from backend.app.core.exceptions import NotFoundError, ValidationError
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/loyalty", tags=["loyalty"])
 security = HTTPBearer()
 
 
-def get_loyalty_service(session=Depends(get_db_session)) -> LoyaltyService:
+def get_loyalty_service(session=Depends(get_db)) -> LoyaltyService:
     """Get loyalty service with dependencies."""
     loyalty_repo = LoyaltyRepository(session)
     booking_repo = BookingRepository(session)

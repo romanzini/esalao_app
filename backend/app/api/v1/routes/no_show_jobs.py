@@ -19,7 +19,7 @@ from backend.app.jobs.no_show_detection import NoShowDetectionJob
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/no-show", tags=["no-show"])
+router = APIRouter(prefix="/no-show", tags=["🚫 No-Show Detection"])
 
 
 @router.post(

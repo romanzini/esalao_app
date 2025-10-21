@@ -21,7 +21,7 @@ from backend.app.db.session import get_db
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/audit", tags=["audit"])
+router = APIRouter(prefix="/audit", tags=["🎯 Policies - Audit Events"])
 
 
 class AuditEventResponse(BaseModel):
