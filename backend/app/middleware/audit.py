@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class AuditMiddleware(BaseHTTPMiddleware):
     """
     Middleware for automatic audit logging of API requests.
-    
+
     This middleware captures:
     - All HTTP requests and responses
     - User authentication information
@@ -44,7 +44,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
     ):
         """
         Initialize audit middleware.
-        
+
         Args:
             app: FastAPI application instance
             excluded_paths: List of paths to exclude from auditing
@@ -67,27 +67,27 @@ class AuditMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """
         Process request and create audit event.
-        
+
         Args:
             request: HTTP request
             call_next: Next middleware/handler in chain
-            
+
         Returns:
             HTTP response
         """
         # Generate unique request ID
         request_id = str(uuid.uuid4())
-        
+
         # Skip excluded paths
         if self._should_exclude_path(request.url.path):
             return await call_next(request)
 
         # Record start time
         start_time = time.time()
-        
+
         # Extract request information
         request_info = await self._extract_request_info(request, request_id)
-        
+
         # Initialize response info
         response_info = {
             "status_code": None,
@@ -99,13 +99,13 @@ class AuditMiddleware(BaseHTTPMiddleware):
         try:
             # Process request
             response = await call_next(request)
-            
+
             # Extract response information
             response_info = await self._extract_response_info(response)
-            
+
             # Calculate processing time
             processing_time = time.time() - start_time
-            
+
             # Create audit event
             await self._create_audit_event(
                 request_info=request_info,
@@ -113,17 +113,17 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 processing_time=processing_time,
                 success=True,
             )
-            
+
             return response
-            
+
         except Exception as e:
             # Calculate processing time for failed requests
             processing_time = time.time() - start_time
-            
+
             # Update response info with error
             response_info["error"] = str(e)
             response_info["status_code"] = 500
-            
+
             # Create audit event for error
             await self._create_audit_event(
                 request_info=request_info,
@@ -132,7 +132,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 success=False,
                 error_message=str(e),
             )
-            
+
             # Re-raise the exception
             raise
 
@@ -143,21 +143,21 @@ class AuditMiddleware(BaseHTTPMiddleware):
     async def _extract_request_info(self, request: Request, request_id: str) -> Dict[str, Any]:
         """
         Extract relevant information from the request.
-        
+
         Args:
             request: HTTP request
             request_id: Unique request identifier
-            
+
         Returns:
             Dictionary with request information
         """
         # Get user information if available
         user_info = self._get_user_info(request)
-        
+
         # Extract client information
         client_host = request.client.host if request.client else None
         user_agent = request.headers.get("user-agent", "")
-        
+
         # Extract request body if enabled and within size limits
         request_body = None
         if self.log_request_body:
@@ -194,10 +194,10 @@ class AuditMiddleware(BaseHTTPMiddleware):
     async def _extract_response_info(self, response: Response) -> Dict[str, Any]:
         """
         Extract relevant information from the response.
-        
+
         Args:
             response: HTTP response
-            
+
         Returns:
             Dictionary with response information
         """
@@ -227,10 +227,10 @@ class AuditMiddleware(BaseHTTPMiddleware):
     def _get_user_info(self, request: Request) -> Dict[str, Any]:
         """
         Extract user information from the request.
-        
+
         Args:
             request: HTTP request
-            
+
         Returns:
             Dictionary with user information
         """
@@ -247,7 +247,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 if user:
                     user_info["user_id"] = getattr(user, "id", None)
                     user_info["user_role"] = getattr(user, "role", None)
-            
+
             # Try to get session ID from various sources
             session_id = (
                 request.headers.get("x-session-id") or
@@ -255,7 +255,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 request.headers.get("authorization", "").split(" ")[-1] if "Bearer" in request.headers.get("authorization", "") else None
             )
             user_info["session_id"] = session_id
-            
+
         except Exception as e:
             logger.warning(f"Failed to extract user info: {e}")
 
@@ -271,7 +271,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
     ) -> None:
         """
         Create an audit event for the request/response.
-        
+
         Args:
             request_info: Information about the request
             response_info: Information about the response
@@ -283,21 +283,21 @@ class AuditMiddleware(BaseHTTPMiddleware):
             # Get database session
             async for session in get_db():
                 audit_repo = AuditEventRepository(session)
-                
+
                 # Determine event type based on endpoint and method
                 event_type = self._determine_event_type(
                     request_info["path"],
                     request_info["method"],
                     response_info["status_code"]
                 )
-                
+
                 # Determine severity
                 severity = self._determine_severity(
                     response_info["status_code"],
                     success,
                     processing_time
                 )
-                
+
                 # Create metadata
                 metadata = {
                     "processing_time_ms": round(processing_time * 1000, 2),
@@ -332,10 +332,10 @@ class AuditMiddleware(BaseHTTPMiddleware):
                     success="success" if success else "failure",
                     error_message=error_message,
                 )
-                
+
                 await session.commit()
                 break
-                
+
         except Exception as e:
             logger.error(f"Failed to create audit event: {e}")
 
@@ -348,7 +348,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
             return AuditEventType.LOGOUT
         elif "/auth/reset-password" in path:
             return AuditEventType.PASSWORD_RESET
-        
+
         # Booking endpoints
         elif "/bookings" in path:
             if method == "POST":
@@ -357,14 +357,14 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 return AuditEventType.BOOKING_UPDATED
             elif "cancel" in path:
                 return AuditEventType.BOOKING_CANCELLED
-        
+
         # Payment endpoints
         elif "/payments" in path:
             if method == "POST":
                 return AuditEventType.PAYMENT_INITIATED
             elif "refund" in path:
                 return AuditEventType.PAYMENT_REFUNDED
-        
+
         # User management
         elif "/users" in path:
             if method == "POST":
@@ -373,11 +373,11 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 return AuditEventType.USER_UPDATED
             elif method == "DELETE":
                 return AuditEventType.USER_DELETED
-        
+
         # System events for errors
         elif status_code and status_code >= 500:
             return AuditEventType.SYSTEM_ERROR
-        
+
         # Default to a generic system event
         return AuditEventType.SYSTEM_ERROR if status_code and status_code >= 400 else AuditEventType.LOGIN
 
@@ -395,23 +395,23 @@ class AuditMiddleware(BaseHTTPMiddleware):
     def _extract_resource_info(self, path: str, method: str) -> tuple[Optional[str], Optional[str]]:
         """Extract resource type and ID from the path."""
         path_parts = path.strip("/").split("/")
-        
+
         # Skip API version prefix
         if path_parts and path_parts[0] in ["v1", "api"]:
             path_parts = path_parts[1:]
-        
+
         if len(path_parts) >= 1:
             resource_type = path_parts[0]
-            
+
             # Try to find resource ID (usually numeric)
             resource_id = None
             for part in path_parts[1:]:
                 if part.isdigit():
                     resource_id = part
                     break
-            
+
             return resource_type, resource_id
-        
+
         return None, None
 
     def _generate_description(self, request_info: Dict, response_info: Dict, success: bool) -> str:
@@ -419,7 +419,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
         method = request_info["method"]
         path = request_info["path"]
         status_code = response_info.get("status_code")
-        
+
         if success:
             return f"Successful {method} request to {path} (HTTP {status_code})"
         else:
@@ -428,7 +428,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
 class AuditEventLogger:
     """Helper class for manual audit event creation."""
-    
+
     @staticmethod
     async def log_user_action(
         user_id: int,
@@ -445,7 +445,7 @@ class AuditEventLogger:
     ) -> None:
         """
         Manually log a user action as an audit event.
-        
+
         Args:
             user_id: ID of the user performing the action
             action: Description of the action
@@ -462,7 +462,7 @@ class AuditEventLogger:
         try:
             async for session in get_db():
                 audit_repo = AuditEventRepository(session)
-                
+
                 await audit_repo.create(
                     event_type=AuditEventType.USER_UPDATED,  # Generic user action
                     action=action,
@@ -478,10 +478,10 @@ class AuditEventLogger:
                     severity=severity,
                     success="success",
                 )
-                
+
                 await session.commit()
                 break
-                
+
         except Exception as e:
             logger.error(f"Failed to log user action: {e}")
 
@@ -496,7 +496,7 @@ class AuditEventLogger:
     ) -> None:
         """
         Log a system event.
-        
+
         Args:
             event_type: Type of system event
             description: Description of the event
@@ -508,7 +508,7 @@ class AuditEventLogger:
         try:
             async for session in get_db():
                 audit_repo = AuditEventRepository(session)
-                
+
                 await audit_repo.create(
                     event_type=event_type,
                     action=event_type.value,
@@ -518,9 +518,9 @@ class AuditEventLogger:
                     success="success" if success else "failure",
                     error_message=error_message,
                 )
-                
+
                 await session.commit()
                 break
-                
+
         except Exception as e:
             logger.error(f"Failed to log system event: {e}")

@@ -81,16 +81,16 @@ class TestCancellationPolicyEndpoints:
             json=sample_policy_data,
             headers=admin_headers
         )
-        
+
         assert response.status_code == 201
         data = response.json()
-        
+
         assert data["name"] == sample_policy_data["name"]
         assert data["description"] == sample_policy_data["description"]
         assert data["is_default"] == sample_policy_data["is_default"]
         assert data["status"] == sample_policy_data["status"]
         assert len(data["tiers"]) == 4
-        
+
         # Check tier ordering
         tiers = sorted(data["tiers"], key=lambda x: x["display_order"])
         assert tiers[0]["advance_notice_hours"] == 0
@@ -107,7 +107,7 @@ class TestCancellationPolicyEndpoints:
             headers=admin_headers
         )
         assert response.status_code == 422
-        
+
         # Invalid fee type
         invalid_data = {
             "name": "Test Policy",
@@ -128,7 +128,7 @@ class TestCancellationPolicyEndpoints:
             headers=admin_headers
         )
         assert response.status_code == 422
-        
+
         # Percentage fee over 100%
         invalid_data = {
             "name": "Test Policy",
@@ -159,18 +159,18 @@ class TestCancellationPolicyEndpoints:
             headers=admin_headers
         )
         assert create_response.status_code == 201
-        
+
         # List policies
         response = await client.get(
             "/v1/cancellation-policies/",
             headers=admin_headers
         )
-        
+
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
         assert len(data) >= 1
-        
+
         # Check policy data
         policy = data[0]
         assert "id" in policy
@@ -188,16 +188,16 @@ class TestCancellationPolicyEndpoints:
         )
         assert create_response.status_code == 201
         policy_id = create_response.json()["id"]
-        
+
         # Get policy by ID
         response = await client.get(
             f"/v1/cancellation-policies/{policy_id}",
             headers=admin_headers
         )
-        
+
         assert response.status_code == 200
         data = response.json()
-        
+
         assert data["id"] == policy_id
         assert data["name"] == sample_policy_data["name"]
         assert len(data["tiers"]) == 4
@@ -208,7 +208,7 @@ class TestCancellationPolicyEndpoints:
             "/v1/cancellation-policies/99999",
             headers=admin_headers
         )
-        
+
         assert response.status_code == 404
 
     async def test_update_policy(self, client: AsyncClient, admin_headers, sample_policy_data):
@@ -221,22 +221,22 @@ class TestCancellationPolicyEndpoints:
         )
         assert create_response.status_code == 201
         policy_id = create_response.json()["id"]
-        
+
         # Update policy
         updated_data = sample_policy_data.copy()
         updated_data["name"] = "Política Atualizada"
         updated_data["description"] = "Descrição atualizada"
         updated_data["tiers"] = updated_data["tiers"][:2]  # Remove some tiers
-        
+
         response = await client.put(
             f"/v1/cancellation-policies/{policy_id}",
             json=updated_data,
             headers=admin_headers
         )
-        
+
         assert response.status_code == 200
         data = response.json()
-        
+
         assert data["name"] == "Política Atualizada"
         assert data["description"] == "Descrição atualizada"
         assert len(data["tiers"]) == 2
@@ -251,13 +251,13 @@ class TestCancellationPolicyEndpoints:
         )
         assert create_response.status_code == 201
         policy_id = create_response.json()["id"]
-        
+
         # Activate policy
         response = await client.post(
             f"/v1/cancellation-policies/{policy_id}/activate",
             headers=admin_headers
         )
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "active"
@@ -272,18 +272,18 @@ class TestCancellationPolicyEndpoints:
         )
         assert create_response.status_code == 201
         policy_id = create_response.json()["id"]
-        
+
         await client.post(
             f"/v1/cancellation-policies/{policy_id}/activate",
             headers=admin_headers
         )
-        
+
         # Deactivate policy
         response = await client.post(
             f"/v1/cancellation-policies/{policy_id}/deactivate",
             headers=admin_headers
         )
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "inactive"
@@ -298,15 +298,15 @@ class TestCancellationPolicyEndpoints:
         )
         assert create_response.status_code == 201
         policy_id = create_response.json()["id"]
-        
+
         # Delete policy
         response = await client.delete(
             f"/v1/cancellation-policies/{policy_id}",
             headers=admin_headers
         )
-        
+
         assert response.status_code == 204
-        
+
         # Verify policy is deleted
         get_response = await client.get(
             f"/v1/cancellation-policies/{policy_id}",
@@ -320,13 +320,13 @@ class TestCancellationPolicyEndpoints:
         salon_data = sample_policy_data.copy()
         salon_data["salon_id"] = 1
         salon_data["is_default"] = False
-        
+
         response = await client.post(
             "/v1/cancellation-policies/",
             json=salon_data,
             headers=salon_owner_headers
         )
-        
+
         # This should work (with proper salon validation)
         assert response.status_code in [201, 400]  # 400 if salon validation fails
 
@@ -336,7 +336,7 @@ class TestCancellationPolicyEndpoints:
             "/v1/cancellation-policies/",
             json=sample_policy_data
         )
-        
+
         assert response.status_code == 401
 
     async def test_filtering_policies(self, client: AsyncClient, admin_headers, sample_policy_data):
@@ -346,15 +346,15 @@ class TestCancellationPolicyEndpoints:
         draft_policy["name"] = "Draft Policy"
         draft_policy["status"] = "draft"
         draft_policy["is_default"] = False
-        
+
         active_policy = sample_policy_data.copy()
         active_policy["name"] = "Active Policy"
         active_policy["status"] = "active"
         active_policy["is_default"] = False
-        
+
         await client.post("/v1/cancellation-policies/", json=draft_policy, headers=admin_headers)
         await client.post("/v1/cancellation-policies/", json=active_policy, headers=admin_headers)
-        
+
         # Filter by status
         response = await client.get(
             "/v1/cancellation-policies/?status_filter=draft",
@@ -363,7 +363,7 @@ class TestCancellationPolicyEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert all(policy["status"] == "draft" for policy in data)
-        
+
         # Filter by default status
         response = await client.get(
             "/v1/cancellation-policies/?is_default=true",
@@ -397,18 +397,18 @@ class TestCancellationPolicyEndpoints:
                 }
             ]
         }
-        
+
         response = await client.post(
             "/v1/cancellation-policies/",
             json=invalid_data,
             headers=admin_headers
         )
         assert response.status_code == 422
-        
+
         # Duplicate display orders
         invalid_data["tiers"][1]["advance_notice_hours"] = 48
         invalid_data["tiers"][1]["display_order"] = 0  # Duplicate order
-        
+
         response = await client.post(
             "/v1/cancellation-policies/",
             json=invalid_data,

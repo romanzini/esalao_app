@@ -420,11 +420,11 @@ class BookingRepository:
     ) -> List[Booking]:
         """
         Find bookings eligible for no-show detection.
-        
+
         Args:
             cutoff_time: Bookings scheduled before this time are eligible
             limit: Maximum number of bookings to return
-            
+
         Returns:
             List of bookings eligible for no-show evaluation
         """
@@ -440,6 +440,6 @@ class BookingRepository:
                 ~Booking.status.in_([BookingStatus.CANCELLED, BookingStatus.COMPLETED])
             )
         ).order_by(Booking.scheduled_at.asc()).limit(limit)
-        
+
         result = await self.session.execute(stmt)
         return result.scalars().all()

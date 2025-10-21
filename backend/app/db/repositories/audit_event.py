@@ -303,7 +303,7 @@ class AuditEventRepository:
 
         min_severity_value = severity_values[min_severity]
         qualifying_severities = [
-            sev for sev, val in severity_values.items() 
+            sev for sev, val in severity_values.items()
             if val >= min_severity_value
         ]
 
@@ -480,7 +480,7 @@ class AuditEventRepository:
             Number of events deleted
         """
         cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
-        
+
         # Count events to be deleted
         count_stmt = select(func.count(AuditEvent.id)).where(
             AuditEvent.timestamp < cutoff_date

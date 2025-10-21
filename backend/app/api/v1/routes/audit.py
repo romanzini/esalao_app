@@ -368,7 +368,7 @@ async def get_audit_statistics(
     """Get audit statistics."""
     try:
         audit_repo = AuditEventRepository(db)
-        
+
         # Default to last 30 days if no dates provided
         if not start_date:
             start_date = datetime.utcnow() - timedelta(days=30)
@@ -470,7 +470,7 @@ async def export_audit_events(
     try:
         # TODO: Implement actual CSV export
         # This would generate a CSV file and return a download link or stream
-        
+
         return {
             "message": "Export functionality not yet implemented",
             "note": "This endpoint would generate and return a CSV file with audit events",

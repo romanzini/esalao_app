@@ -273,18 +273,18 @@ class CancellationTierRepository:
     ) -> List[CancellationPolicy]:
         """List cancellation policies with optional filtering."""
         query = select(CancellationPolicy)
-        
+
         if salon_id is not None:
             query = query.where(CancellationPolicy.salon_id == salon_id)
-        
+
         if status is not None:
             query = query.where(CancellationPolicy.status == status)
-        
+
         if is_default is not None:
             query = query.where(CancellationPolicy.is_default == is_default)
-        
+
         query = query.offset(skip).limit(limit).order_by(CancellationPolicy.created_at.desc())
-        
+
         result = await self.db.execute(query)
         return result.scalars().all()
 
@@ -297,10 +297,10 @@ class CancellationTierRepository:
         policy = await self.get_by_id(policy_id)
         if not policy:
             return None
-        
+
         policy.status = status
         policy.updated_at = datetime.utcnow()
-        
+
         await self.db.flush()
         await self.db.refresh(policy)
         return policy
@@ -320,7 +320,7 @@ class CancellationTierRepository:
         try:
             # First delete tiers
             await self.delete_policy_tiers(policy_id)
-            
+
             # Then delete policy
             query = delete(CancellationPolicy).where(CancellationPolicy.id == policy_id)
             await self.db.execute(query)
@@ -332,7 +332,7 @@ class CancellationTierRepository:
     async def get_applicable_policy(self, salon_id: Optional[int] = None) -> Optional[CancellationPolicy]:
         """
         Get the applicable cancellation policy for a booking.
-        
+
         Priority order:
         1. Active salon-specific policy
         2. Default policy
@@ -349,11 +349,11 @@ class CancellationTierRepository:
                     )
                 )
             ).order_by(CancellationPolicy.effective_from.desc())
-            
+
             result = await self.db.execute(query)
             salon_policy = result.scalar_one_or_none()
             if salon_policy:
                 return salon_policy
-        
+
         # Fall back to default policy
         return await self.get_default_policy()

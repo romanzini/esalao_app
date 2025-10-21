@@ -71,23 +71,23 @@ async def run_no_show_detection(
     """
     try:
         logger.info(f"Manual no-show detection started by user {current_user.get('id')}")
-        
+
         # Create and run the job
         job = NoShowDetectionJob(detection_window_hours=detection_window_hours)
         results = await job.run(db_session=db)
-        
+
         # Add metadata
         results["triggered_by"] = current_user.get("id")
         results["trigger_type"] = "manual"
-        
+
         logger.info(
             f"Manual no-show detection completed. "
             f"Evaluated: {results['bookings_evaluated']}, "
             f"Detected: {results['no_shows_detected']}"
         )
-        
+
         return results
-        
+
     except Exception as e:
         logger.error(f"Manual no-show detection failed: {str(e)}")
         raise HTTPException(
@@ -141,29 +141,29 @@ async def evaluate_specific_bookings(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="At least one booking ID must be provided"
             )
-        
+
         if len(booking_ids) > 100:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Maximum 100 booking IDs allowed per request"
             )
-        
+
         logger.info(
             f"Manual no-show evaluation started by user {current_user.get('id')} "
             f"for {len(booking_ids)} bookings"
         )
-        
+
         # Create and run evaluation job
         job = NoShowDetectionJob()
         results = await job.run_manual(booking_ids=booking_ids, db_session=db)
-        
+
         # Add metadata
         results["triggered_by"] = current_user.get("id")
         results["trigger_type"] = "manual_evaluation"
         results["requested_booking_ids"] = booking_ids
-        
+
         return results
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -206,7 +206,7 @@ async def get_job_status(
     try:
         # TODO: Implement job status tracking in database
         # For now, return basic configuration
-        
+
         return {
             "system_status": "active",
             "default_detection_window_hours": 2,
@@ -221,7 +221,7 @@ async def get_job_status(
             },
             "checked_at": datetime.utcnow().isoformat(),
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to get job status: {str(e)}")
         raise HTTPException(
@@ -265,7 +265,7 @@ async def configure_job_schedule(
     try:
         # TODO: Store configuration in database
         # TODO: Update scheduler configuration
-        
+
         config = {
             "automatic_detection_enabled": enabled,
             "run_interval_hours": interval_hours,
@@ -273,17 +273,17 @@ async def configure_job_schedule(
             "updated_by": current_user.get("id"),
             "updated_at": datetime.utcnow().isoformat(),
         }
-        
+
         logger.info(
             f"No-show detection schedule updated by user {current_user.get('id')}: {config}"
         )
-        
+
         return {
             "message": "Configuration updated successfully",
             "configuration": config,
             "note": "Scheduler restart may be required for changes to take effect"
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to update job schedule: {str(e)}")
         raise HTTPException(

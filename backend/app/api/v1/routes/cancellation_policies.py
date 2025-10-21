@@ -92,17 +92,17 @@ class CancellationPolicyRequest(BaseModel):
         """Validate tier ordering and uniqueness."""
         if not v:
             raise ValueError('At least one tier is required')
-        
+
         # Check for duplicate advance notice hours
         hours = [tier.advance_notice_hours for tier in v]
         if len(hours) != len(set(hours)):
             raise ValueError('Duplicate advance notice hours not allowed')
-        
+
         # Check for duplicate display orders
         orders = [tier.display_order for tier in v]
         if len(orders) != len(set(orders)):
             raise ValueError('Duplicate display orders not allowed')
-        
+
         return v
 
 
@@ -164,7 +164,7 @@ async def create_policy(
     """
     try:
         policy_repo = CancellationPolicyRepository(db)
-        
+
         # Salon owners can only create policies for their salon
         if current_user.role == UserRole.SALON_OWNER:
             # TODO: Validate that salon_id belongs to current user
@@ -173,7 +173,7 @@ async def create_policy(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Salon owners must specify salon_id"
                 )
-        
+
         # Check if trying to create default policy when one already exists
         if policy_data.is_default:
             existing_default = await policy_repo.get_default_policy()
@@ -182,7 +182,7 @@ async def create_policy(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="A default policy already exists"
                 )
-        
+
         # Create policy
         policy = await policy_repo.create_policy(
             name=policy_data.name,
@@ -193,7 +193,7 @@ async def create_policy(
             effective_until=policy_data.effective_until,
             status=policy_data.status,
         )
-        
+
         # Create tiers
         for tier_data in policy_data.tiers:
             await policy_repo.create_tier(
@@ -205,14 +205,14 @@ async def create_policy(
                 allows_refund=tier_data.allows_refund,
                 display_order=tier_data.display_order,
             )
-        
+
         # Get complete policy with tiers
         complete_policy = await policy_repo.get_by_id_with_tiers(policy.id)
-        
+
         logger.info(f"Created cancellation policy {policy.id} by user {current_user.id}")
-        
+
         return CancellationPolicyResponse.from_orm(complete_policy)
-        
+
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -251,13 +251,13 @@ async def list_policies(
     """
     try:
         policy_repo = CancellationPolicyRepository(db)
-        
+
         # Apply access control
         if current_user.role != UserRole.ADMIN:
             # TODO: Get user's salon(s) and filter accordingly
             # For now, we'll just filter by salon_id if provided
             pass
-        
+
         policies = await policy_repo.list_policies(
             salon_id=salon_id,
             status=status_filter,
@@ -265,9 +265,9 @@ async def list_policies(
             skip=skip,
             limit=limit,
         )
-        
+
         return [CancellationPolicyListResponse.from_orm(policy) for policy in policies]
-        
+
     except Exception as e:
         logger.error(f"Failed to list cancellation policies: {str(e)}")
         raise HTTPException(
@@ -295,17 +295,17 @@ async def get_policy(
     try:
         policy_repo = CancellationPolicyRepository(db)
         policy = await policy_repo.get_by_id_with_tiers(policy_id)
-        
+
         if not policy:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Policy not found"
             )
-        
+
         # TODO: Check access permissions for salon-specific policies
-        
+
         return CancellationPolicyResponse.from_orm(policy)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -336,7 +336,7 @@ async def update_policy(
     """
     try:
         policy_repo = CancellationPolicyRepository(db)
-        
+
         # Check if policy exists
         existing_policy = await policy_repo.get_by_id(policy_id)
         if not existing_policy:
@@ -344,9 +344,9 @@ async def update_policy(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Policy not found"
             )
-        
+
         # TODO: Check access permissions
-        
+
         # Update policy
         updated_policy = await policy_repo.update_policy(
             policy_id=policy_id,
@@ -358,10 +358,10 @@ async def update_policy(
             effective_until=policy_data.effective_until,
             status=policy_data.status,
         )
-        
+
         # Update tiers (delete existing and create new ones)
         await policy_repo.delete_policy_tiers(policy_id)
-        
+
         for tier_data in policy_data.tiers:
             await policy_repo.create_tier(
                 policy_id=policy_id,
@@ -372,14 +372,14 @@ async def update_policy(
                 allows_refund=tier_data.allows_refund,
                 display_order=tier_data.display_order,
             )
-        
+
         # Get complete updated policy
         complete_policy = await policy_repo.get_by_id_with_tiers(policy_id)
-        
+
         logger.info(f"Updated cancellation policy {policy_id} by user {current_user.id}")
-        
+
         return CancellationPolicyResponse.from_orm(complete_policy)
-        
+
     except HTTPException:
         raise
     except ValueError as e:
@@ -414,7 +414,7 @@ async def delete_policy(
     """
     try:
         policy_repo = CancellationPolicyRepository(db)
-        
+
         # Check if policy exists
         policy = await policy_repo.get_by_id(policy_id)
         if not policy:
@@ -422,14 +422,14 @@ async def delete_policy(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Policy not found"
             )
-        
+
         # TODO: Check if policy is in use by active bookings
-        
+
         # Delete policy (cascades to tiers)
         await policy_repo.delete_policy(policy_id)
-        
+
         logger.info(f"Deleted cancellation policy {policy_id} by user {current_user.id}")
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -459,7 +459,7 @@ async def activate_policy(
     """
     try:
         policy_repo = CancellationPolicyRepository(db)
-        
+
         # Check if policy exists
         policy = await policy_repo.get_by_id(policy_id)
         if not policy:
@@ -467,22 +467,22 @@ async def activate_policy(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Policy not found"
             )
-        
+
         # TODO: Check access permissions
-        
+
         # Activate policy
         updated_policy = await policy_repo.update_policy_status(
             policy_id=policy_id,
             status=CancellationPolicyStatus.ACTIVE
         )
-        
+
         # Get complete policy with tiers
         complete_policy = await policy_repo.get_by_id_with_tiers(policy_id)
-        
+
         logger.info(f"Activated cancellation policy {policy_id} by user {current_user.id}")
-        
+
         return CancellationPolicyResponse.from_orm(complete_policy)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -511,7 +511,7 @@ async def deactivate_policy(
     """
     try:
         policy_repo = CancellationPolicyRepository(db)
-        
+
         # Check if policy exists
         policy = await policy_repo.get_by_id(policy_id)
         if not policy:
@@ -519,22 +519,22 @@ async def deactivate_policy(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Policy not found"
             )
-        
+
         # TODO: Check access permissions
-        
+
         # Deactivate policy
         updated_policy = await policy_repo.update_policy_status(
             policy_id=policy_id,
             status=CancellationPolicyStatus.INACTIVE
         )
-        
+
         # Get complete policy with tiers
         complete_policy = await policy_repo.get_by_id_with_tiers(policy_id)
-        
+
         logger.info(f"Deactivated cancellation policy {policy_id} by user {current_user.id}")
-        
+
         return CancellationPolicyResponse.from_orm(complete_policy)
-        
+
     except HTTPException:
         raise
     except Exception as e:

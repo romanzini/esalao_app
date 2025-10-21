@@ -714,7 +714,7 @@ async def calculate_cancellation_fee(
     try:
         # Use provided cancellation time or current time
         cancel_time = cancellation_time or datetime.utcnow()
-        
+
         # Calculate cancellation fee
         fee_result = await cancellation_service.calculate_cancellation_fee(
             booking_id=booking_id,
