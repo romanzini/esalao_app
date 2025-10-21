@@ -1,0 +1,188 @@
+{
+  "validation_summary": {
+    "total_metrics": 17,
+    "passed_metrics": 14,
+    "overall_score": 82.35294117647058,
+    "grade": "B",
+    "timestamp": "2025-10-21T11:18:17.997718"
+  },
+  "category_scores": {
+    "Structure": {
+      "score": 100.0,
+      "passed": 1,
+      "total": 1
+    },
+    "Dependencies": {
+      "score": 100.0,
+      "passed": 1,
+      "total": 1
+    },
+    "Code Quality": {
+      "score": 66.66666666666666,
+      "passed": 2,
+      "total": 3
+    },
+    "Documentation": {
+      "score": 100.0,
+      "passed": 1,
+      "total": 1
+    },
+    "Features": {
+      "score": 60.0,
+      "passed": 3,
+      "total": 5
+    },
+    "Database": {
+      "score": 100.0,
+      "passed": 3,
+      "total": 3
+    },
+    "API": {
+      "score": 100.0,
+      "passed": 3,
+      "total": 3
+    }
+  },
+  "detailed_metrics": [
+    {
+      "category": "Structure",
+      "metric": "File Coverage",
+      "value": "16/16",
+      "target": "100%",
+      "passed": true,
+      "details": "All files present"
+    },
+    {
+      "category": "Dependencies",
+      "metric": "Import Coverage",
+      "value": "66/11",
+      "target": "80%",
+      "passed": true,
+      "details": "Import usage: {'fastapi': {'found': 27, 'expected': 4}, 'sqlalchemy': {'found': 15, 'expected': 4}, 'pydantic': {'found': 24, 'expected': 2}, 'redis': {'found': 0, 'expected': 1}}"
+    },
+    {
+      "category": "Code Quality",
+      "metric": "Async Usage",
+      "value": "437/815",
+      "target": "50%",
+      "passed": true,
+      "details": "53.6% async functions"
+    },
+    {
+      "category": "Code Quality",
+      "metric": "Type Hints",
+      "value": "730/815",
+      "target": "80%",
+      "passed": true,
+      "details": "89.6% functions with type hints"
+    },
+    {
+      "category": "Code Quality",
+      "metric": "Error Handling",
+      "value": "201/815",
+      "target": "60%",
+      "passed": false,
+      "details": "24.7% functions with error handling"
+    },
+    {
+      "category": "Documentation",
+      "metric": "Docstring Coverage",
+      "value": "727/815",
+      "target": "70%",
+      "passed": true,
+      "details": "89.2% functions documented"
+    },
+    {
+      "category": "Features",
+      "metric": "Cancellation Policies Implementation",
+      "value": "5/3 patterns",
+      "target": "80%",
+      "passed": true,
+      "details": "Files: 2/2, Patterns: 5/3"
+    },
+    {
+      "category": "Features",
+      "metric": "No-Show Detection Implementation",
+      "value": "1/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 2/2, Patterns: 1/3"
+    },
+    {
+      "category": "Features",
+      "metric": "Audit System Implementation",
+      "value": "6/3 patterns",
+      "target": "80%",
+      "passed": true,
+      "details": "Files: 2/2, Patterns: 6/3"
+    },
+    {
+      "category": "Features",
+      "metric": "Reporting System Implementation",
+      "value": "1/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 2/2, Patterns: 1/3"
+    },
+    {
+      "category": "Features",
+      "metric": "Performance Optimization Implementation",
+      "value": "3/3 patterns",
+      "target": "80%",
+      "passed": true,
+      "details": "Files: 1/1, Patterns: 3/3"
+    },
+    {
+      "category": "Database",
+      "metric": "Model Implementation",
+      "value": "15 models",
+      "target": "\u22655",
+      "passed": true,
+      "details": "Found 15 SQLAlchemy models"
+    },
+    {
+      "category": "Database",
+      "metric": "Relationships",
+      "value": "11 relationships",
+      "target": "\u22653",
+      "passed": true,
+      "details": "Found 11 model relationships"
+    },
+    {
+      "category": "Database",
+      "metric": "Performance Indexes",
+      "value": "13 indexed models",
+      "target": "\u22652",
+      "passed": true,
+      "details": "Found 13 models with indexes"
+    },
+    {
+      "category": "API",
+      "metric": "Router Implementation",
+      "value": "21 routers",
+      "target": "\u22656",
+      "passed": true,
+      "details": "Found 21 API routers"
+    },
+    {
+      "category": "API",
+      "metric": "Endpoint Coverage",
+      "value": "119 endpoints",
+      "target": "\u226520",
+      "passed": true,
+      "details": "Found 119 API endpoints"
+    },
+    {
+      "category": "API",
+      "metric": "Response Models",
+      "value": "17 models",
+      "target": "\u22654",
+      "passed": true,
+      "details": "Found 17 files with response models"
+    }
+  ],
+  "recommendations": [
+    "Improve Code Quality: 1 metrics need attention",
+    "Improve Features: 2 metrics need attention"
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "test_summary": {
+    "total_requests": 71,
+    "successful_requests": 0,
+    "success_rate_percent": 0.0,
+    "test_timestamp": "2025-10-21T11:13:08.788536"
+  },
+  "performance_metrics": {
+    "avg_response_time_ms": 0,
+    "min_response_time_ms": 0,
+    "max_response_time_ms": 0,
+    "p95_response_time_ms": 0,
+    "p99_response_time_ms": 0
+  },
+  "cache_performance": {
+    "cache_hit_rate_percent": 1.4084507042253522,
+    "cached_requests": 1,
+    "avg_cached_response_time_ms": 4.192829132080078
+  },
+  "performance_targets": {
+    "avg_response_time_ms": 500,
+    "p95_response_time_ms": 1000,
+    "success_rate_percent": 99.0,
+    "cache_improvement_percent": 50.0
+  },
+  "target_compliance": {
+    "avg_response_time_ok": false,
+    "success_rate_ok": false,
+    "cache_performance_ok": false
+  },
+  "detailed_results": {
+    "basic_endpoints": [
+      "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=41.823387145996094, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/reports/professionals', response_time_ms=5.409717559814453, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/platform-reports/overview', response_time_ms=5.030393600463867, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/audit/events', response_time_ms=16.646385192871094, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+      "PerformanceResult(endpoint='/api/v1/cancellation-policies', response_time_ms=14.831304550170898, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")"
+    ],
+    "cache_performance": [
+      "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=6.780147552490234, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=4.192829132080078, status_code=0, success=False, cached=True, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/optimized-reports/booking-metrics', response_time_ms=4.297733306884766, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/optimized-reports/booking-metrics', response_time_ms=17.325162887573242, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")"
+    ],
+    "concurrent_load": {
+      "/api/v1/reports/dashboard": [
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=13.297319412231445, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=7.436513900756836, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=2.814769744873047, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=18.267154693603516, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=14.758825302124023, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=4.259586334228516, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=18.094778060913086, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=14.174938201904297, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=3.2150745391845703, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=15.323638916015625, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=12.062549591064453, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=15.119314193725586, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=18.31221580505371, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=20.303726196289062, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=4.235267639160156, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=12.491941452026367, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=16.439437866210938, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=4.291772842407227, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=9.330272674560547, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=13.398170471191406, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=4.415035247802734, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=16.068220138549805, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=22.539138793945312, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=5.125761032104492, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=11.11459732055664, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=21.358728408813477, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=3.9365291595458984, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=18.323898315429688, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=23.68927001953125, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/reports/dashboard', response_time_ms=25.724172592163086, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")"
+      ],
+      "/api/v1/optimized-reports/dashboard": [
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=8.688688278198242, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=4.406213760375977, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=5.403757095336914, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=12.427330017089844, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=7.605314254760742, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=4.401445388793945, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=14.670133590698242, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=8.592605590820312, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=7.660150527954102, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=9.22846794128418, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=3.881692886352539, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=21.626949310302734, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=12.914896011352539, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=15.03753662109375, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=10.446786880493164, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=10.486125946044922, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=8.722066879272461, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=10.446786880493164, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=11.547327041625977, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=9.413003921508789, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=11.041402816772461, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=13.155221939086914, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=11.390209197998047, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=8.953094482421875, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=9.41324234008789, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=9.96708869934082, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=10.557889938354492, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=8.896350860595703, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=7.738590240478516, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+        "PerformanceResult(endpoint='/api/v1/optimized-reports/dashboard', response_time_ms=11.157989501953125, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")"
+      ]
+    },
+    "database_heavy": [
+      "PerformanceResult(endpoint='/api/v1/audit/events/stats', response_time_ms=5.298852920532227, status_code=0, success=False, cached=False, error=\"('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))\")",
+      "PerformanceResult(endpoint='/api/v1/reports/revenue/trend', response_time_ms=26.03888511657715, status_code=0, success=False, cached=False, error=\"('Connection aborted.', ConnectionAbortedError(10053, 'Uma conex\u00e3o estabelecida foi anulada pelo software no computador host', None, 10053, None))\")"
+    ]
+  }
+}

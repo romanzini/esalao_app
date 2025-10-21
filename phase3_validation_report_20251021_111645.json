@@ -1,0 +1,191 @@
+{
+  "validation_summary": {
+    "total_metrics": 17,
+    "passed_metrics": 4,
+    "overall_score": 23.52941176470588,
+    "grade": "F",
+    "timestamp": "2025-10-21T11:16:45.194651"
+  },
+  "category_scores": {
+    "Structure": {
+      "score": 0.0,
+      "passed": 0,
+      "total": 1
+    },
+    "Dependencies": {
+      "score": 100.0,
+      "passed": 1,
+      "total": 1
+    },
+    "Code Quality": {
+      "score": 66.66666666666666,
+      "passed": 2,
+      "total": 3
+    },
+    "Documentation": {
+      "score": 100.0,
+      "passed": 1,
+      "total": 1
+    },
+    "Features": {
+      "score": 0.0,
+      "passed": 0,
+      "total": 5
+    },
+    "Database": {
+      "score": 0.0,
+      "passed": 0,
+      "total": 3
+    },
+    "API": {
+      "score": 0.0,
+      "passed": 0,
+      "total": 3
+    }
+  },
+  "detailed_metrics": [
+    {
+      "category": "Structure",
+      "metric": "File Coverage",
+      "value": "2/17",
+      "target": "100%",
+      "passed": false,
+      "details": "Missing: ['app/models/cancellation_policy.py', 'app/services/cancellation_policy_service.py', 'app/api/endpoints/cancellation_policies.py', 'app/services/no_show_service.py', 'app/api/endpoints/no_show.py', 'app/models/audit_event.py', 'app/services/audit_service.py', 'app/api/endpoints/audit.py', 'app/services/reporting_service.py', 'app/api/endpoints/reports.py', 'app/api/endpoints/platform_reports.py', 'app/services/optimization_service.py', 'app/api/endpoints/optimized_reports.py', 'app/core/database.py', 'app/core/redis.py']"
+    },
+    {
+      "category": "Dependencies",
+      "metric": "Import Coverage",
+      "value": "66/11",
+      "target": "80%",
+      "passed": true,
+      "details": "Import usage: {'fastapi': {'found': 27, 'expected': 4}, 'sqlalchemy': {'found': 15, 'expected': 4}, 'pydantic': {'found': 24, 'expected': 2}, 'redis': {'found': 0, 'expected': 1}}"
+    },
+    {
+      "category": "Code Quality",
+      "metric": "Async Usage",
+      "value": "437/815",
+      "target": "50%",
+      "passed": true,
+      "details": "53.6% async functions"
+    },
+    {
+      "category": "Code Quality",
+      "metric": "Type Hints",
+      "value": "730/815",
+      "target": "80%",
+      "passed": true,
+      "details": "89.6% functions with type hints"
+    },
+    {
+      "category": "Code Quality",
+      "metric": "Error Handling",
+      "value": "201/815",
+      "target": "60%",
+      "passed": false,
+      "details": "24.7% functions with error handling"
+    },
+    {
+      "category": "Documentation",
+      "metric": "Docstring Coverage",
+      "value": "727/815",
+      "target": "70%",
+      "passed": true,
+      "details": "89.2% functions documented"
+    },
+    {
+      "category": "Features",
+      "metric": "Cancellation Policies Implementation",
+      "value": "0/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 0/2, Patterns: 0/3"
+    },
+    {
+      "category": "Features",
+      "metric": "No-Show Detection Implementation",
+      "value": "0/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 0/1, Patterns: 0/3"
+    },
+    {
+      "category": "Features",
+      "metric": "Audit System Implementation",
+      "value": "0/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 0/2, Patterns: 0/3"
+    },
+    {
+      "category": "Features",
+      "metric": "Reporting System Implementation",
+      "value": "0/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 0/2, Patterns: 0/3"
+    },
+    {
+      "category": "Features",
+      "metric": "Performance Optimization Implementation",
+      "value": "0/3 patterns",
+      "target": "80%",
+      "passed": false,
+      "details": "Files: 0/2, Patterns: 0/3"
+    },
+    {
+      "category": "Database",
+      "metric": "Model Implementation",
+      "value": "0 models",
+      "target": "\u22655",
+      "passed": false,
+      "details": "Found 0 SQLAlchemy models"
+    },
+    {
+      "category": "Database",
+      "metric": "Relationships",
+      "value": "0 relationships",
+      "target": "\u22653",
+      "passed": false,
+      "details": "Found 0 model relationships"
+    },
+    {
+      "category": "Database",
+      "metric": "Performance Indexes",
+      "value": "0 indexed models",
+      "target": "\u22652",
+      "passed": false,
+      "details": "Found 0 models with indexes"
+    },
+    {
+      "category": "API",
+      "metric": "Router Implementation",
+      "value": "0 routers",
+      "target": "\u22656",
+      "passed": false,
+      "details": "Found 0 API routers"
+    },
+    {
+      "category": "API",
+      "metric": "Endpoint Coverage",
+      "value": "0 endpoints",
+      "target": "\u226520",
+      "passed": false,
+      "details": "Found 0 API endpoints"
+    },
+    {
+      "category": "API",
+      "metric": "Response Models",
+      "value": "0 models",
+      "target": "\u22654",
+      "passed": false,
+      "details": "Found 0 files with response models"
+    }
+  ],
+  "recommendations": [
+    "Improve Structure: 1 metrics need attention",
+    "Improve Code Quality: 1 metrics need attention",
+    "Improve Features: 5 metrics need attention",
+    "Improve Database: 3 metrics need attention",
+    "Improve API: 3 metrics need attention"
+  ]
+}
