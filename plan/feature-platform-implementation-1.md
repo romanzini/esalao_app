@@ -266,6 +266,7 @@ Plano determinístico e executável para implementar a plataforma (backend monol
 ## 8. Related Specifications / Further Reading
 
 - `plan/architecture-platform-1.md`
+- `plan/feature-platform-implementation-1.md`
 - `prd.md`
 - `issues/README.md`
 - OWASP Top 10
