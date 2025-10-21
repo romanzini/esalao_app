@@ -7,6 +7,7 @@ from .professional import Professional
 from .service import Service
 from .availability import Availability
 from .booking import Booking, BookingStatus
+from .multi_service_booking import MultiServiceBooking, MultiServiceBookingStatus
 from .overbooking import OverbookingConfig, OverbookingScope, OverbookingTimeframe
 from .payment import Payment, Refund, PaymentWebhookEvent, PaymentStatus, PaymentMethod, RefundStatus
 from .payment_log import PaymentLog, PaymentLogLevel, PaymentLogType
@@ -20,6 +21,10 @@ from .loyalty import (
 from .notifications import (
     NotificationPreferences, NotificationTemplate, NotificationQueue, NotificationLog,
     NotificationChannel, NotificationEventType, NotificationPriority, NotificationStatus
+)
+from .review import (
+    Review, ReviewHelpfulness, ReviewFlag,
+    ReviewStatus, ReviewModerationReason
 )
 
 __all__ = [
@@ -67,4 +72,14 @@ __all__ = [
     "NotificationEventType",
     "NotificationPriority",
     "NotificationStatus",
+    "MultiServiceBooking",
+    "MultiServiceBookingStatus",
+    "OverbookingConfig",
+    "OverbookingScope",
+    "OverbookingTimeframe",
+    "Review",
+    "ReviewHelpfulness",
+    "ReviewFlag",
+    "ReviewStatus",
+    "ReviewModerationReason",
 ]

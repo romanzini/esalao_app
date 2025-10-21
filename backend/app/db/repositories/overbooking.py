@@ -35,11 +35,11 @@ class OverbookingRepository:
         config = await self.get_by_id(config_id)
         if not config:
             return None
-            
+
         for key, value in update_data.items():
             if hasattr(config, key):
                 setattr(config, key, value)
-                
+
         await self.session.flush()
         await self.session.refresh(config)
         return config
@@ -49,7 +49,7 @@ class OverbookingRepository:
         config = await self.get_by_id(config_id)
         if not config:
             return False
-            
+
         await self.session.delete(config)
         await self.session.flush()
         return True
@@ -59,12 +59,12 @@ class OverbookingRepository:
         conditions = []
         if not include_inactive:
             conditions.append(OverbookingConfig.is_active == True)
-            
+
         if conditions:
             query = select(OverbookingConfig).where(and_(*conditions))
         else:
             query = select(OverbookingConfig)
-            
+
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -78,21 +78,21 @@ class OverbookingRepository:
     ) -> Optional[OverbookingConfig]:
         """
         Get the most specific effective overbooking configuration.
-        
+
         Priority order: service -> professional -> salon -> global
-        
+
         Args:
             salon_id: Salon ID to check
             professional_id: Professional ID to check
             service_id: Service ID to check
             check_time: Time to check for time-based restrictions
             check_datetime: Datetime to check for effective period
-            
+
         Returns:
             Most specific effective configuration or None
         """
         now = check_datetime or datetime.utcnow()
-        
+
         # Build base conditions
         base_conditions = [
             OverbookingConfig.is_active == True,
@@ -107,7 +107,7 @@ class OverbookingRepository:
         ]
 
         # Try to find config in priority order
-        
+
         # 1. Service-specific
         if service_id:
             query = select(OverbookingConfig).where(
@@ -172,20 +172,20 @@ class OverbookingRepository:
     ) -> List[OverbookingConfig]:
         """
         List configurations by scope.
-        
+
         Args:
             scope: Configuration scope
             scope_id: ID for scoped entities (salon_id, professional_id, service_id)
             include_inactive: Whether to include inactive configurations
-            
+
         Returns:
             List of configurations
         """
         conditions = [OverbookingConfig.scope == scope]
-        
+
         if not include_inactive:
             conditions.append(OverbookingConfig.is_active == True)
-            
+
         if scope_id:
             if scope == OverbookingScope.SALON:
                 conditions.append(OverbookingConfig.salon_id == scope_id)
@@ -223,7 +223,7 @@ class OverbookingRepository:
             max_no_show_rate=40.0,  # 40% maximum no-show rate
             is_active=True
         )
-        
+
         self.session.add(config)
         await self.session.flush()
         await self.session.refresh(config)
@@ -239,14 +239,14 @@ class OverbookingRepository:
     ) -> bool:
         """
         Check if there are conflicting configurations.
-        
+
         Args:
             scope: Configuration scope
             salon_id: Salon ID
             professional_id: Professional ID
             service_id: Service ID
             exclude_id: Configuration ID to exclude from check
-            
+
         Returns:
             True if conflicts exist
         """
@@ -254,10 +254,10 @@ class OverbookingRepository:
             OverbookingConfig.scope == scope,
             OverbookingConfig.is_active == True
         ]
-        
+
         if exclude_id:
             conditions.append(OverbookingConfig.id != exclude_id)
-            
+
         if scope == OverbookingScope.SALON and salon_id:
             conditions.append(OverbookingConfig.salon_id == salon_id)
         elif scope == OverbookingScope.PROFESSIONAL and professional_id:
@@ -273,5 +273,5 @@ class OverbookingRepository:
         """Check if configuration applies to specific time."""
         if not check_time:
             return True
-            
+
         return config.applies_to_time(check_time)

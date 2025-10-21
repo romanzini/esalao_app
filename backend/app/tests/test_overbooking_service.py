@@ -64,20 +64,20 @@ class TestOverbookingService:
         """Test capacity calculation with no overbooking configuration."""
         # Setup - no config found
         mock_overbooking_repo.get_effective_config.return_value = None
-        
+
         # Mock overlapping bookings (this is what _count_current_bookings uses)
         mock_bookings_list = [{"id": "1"}, {"id": "2"}]  # 2 bookings
         mock_booking_repo.find_overlapping_bookings.return_value = mock_bookings_list
-        
+
         target_datetime = datetime.utcnow()
-        
+
         result = await overbooking_service.calculate_available_capacity(
             professional_id=1,
             target_datetime=target_datetime,
             service_duration_minutes=60,
             base_capacity=5
         )
-        
+
         assert result["base_capacity"] == 5
         assert result["overbooking_enabled"] is False
         assert result["max_capacity"] == 5
@@ -90,15 +90,15 @@ class TestOverbookingService:
         # Setup - no config, should accept based on base capacity
         mock_overbooking_repo.get_effective_config.return_value = None
         mock_booking_repo.find_overlapping_bookings.return_value = []  # No overlapping bookings
-        
+
         target_datetime = datetime.utcnow()
-        
+
         result = await overbooking_service.can_accept_booking(
             professional_id=1,
             target_datetime=target_datetime,
             service_duration_minutes=60
         )
-        
+
         # Should check capacity calculation
         can_accept, capacity_info = result
         assert isinstance(can_accept, bool)
@@ -117,12 +117,12 @@ class TestOverbookingService:
             is_active=True
         )
         mock_overbooking_repo.get_effective_config.return_value = mock_config
-        
+
         result = await overbooking_service.get_overbooking_status(
             professional_id=1,
             target_date=datetime.utcnow().date()
         )
-        
+
         assert "config" in result
         assert "is_enabled" in result
         assert result["is_enabled"] is True

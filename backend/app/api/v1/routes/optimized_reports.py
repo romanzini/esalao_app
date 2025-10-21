@@ -69,7 +69,7 @@ async def get_optimized_dashboard_metrics(
         description="Salon ID (required for non-admin users)"
     ),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> DashboardMetrics:
@@ -220,7 +220,7 @@ async def get_optimized_booking_metrics(
     professional_id: Optional[int] = Query(None, description="Filter by professional"),
     service_id: Optional[int] = Query(None, description="Filter by service"),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> BookingMetrics:
@@ -309,7 +309,7 @@ async def get_optimized_professional_metrics(
     salon_id: Optional[int] = Query(None, description="Filter by salon"),
     limit: int = Query(10, ge=1, le=100, description="Maximum number of professionals"),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> List[ProfessionalMetrics]:

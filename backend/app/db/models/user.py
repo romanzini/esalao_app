@@ -11,6 +11,9 @@ from backend.app.db.models.base import Base, IDMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from backend.app.db.models.payment import Payment
+    from backend.app.db.models.review import Review, ReviewHelpfulness, ReviewFlag
+    from backend.app.db.models.multi_service_booking import MultiServiceBooking
+    from backend.app.db.models.notifications import NotificationPreferences, NotificationQueue
 
 
 class UserRole(str, Enum):
@@ -91,10 +94,16 @@ class User(Base, IDMixin, TimestampMixin):
     #     back_populates="owner",
     #     lazy="selectin",
     # )
+    # Booking relationships - commented to avoid ambiguity with multi_service_bookings
     # bookings: Mapped[list["Booking"]] = relationship(
     #     back_populates="client",
     #     lazy="selectin",
     # )
+    multi_service_bookings: Mapped[list["MultiServiceBooking"]] = relationship(
+        back_populates="client",
+        foreign_keys="MultiServiceBooking.client_id",
+        lazy="selectin",
+    )
     payments: Mapped[list["Payment"]] = relationship(
         back_populates="user",
         lazy="selectin",
@@ -108,6 +117,28 @@ class User(Base, IDMixin, TimestampMixin):
     )
     notifications: Mapped[list["NotificationQueue"]] = relationship(
         back_populates="user",
+        lazy="selectin",
+    )
+
+    # Review relationships
+    client_reviews: Mapped[list["Review"]] = relationship(
+        foreign_keys="Review.client_id",
+        back_populates="client",
+        lazy="selectin",
+    )
+    professional_reviews: Mapped[list["Review"]] = relationship(
+        foreign_keys="Review.professional_id",
+        back_populates="professional",
+        lazy="selectin",
+    )
+    review_helpfulness_votes: Mapped[list["ReviewHelpfulness"]] = relationship(
+        back_populates="user",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+    review_flags: Mapped[list["ReviewFlag"]] = relationship(
+        foreign_keys="ReviewFlag.reporter_id",
+        back_populates="reporter",
         lazy="selectin",
     )
 

@@ -138,8 +138,8 @@ class RevenueBreakdownSchema(BaseModel):
 class TrendDataPointSchema(BaseModel):
     """Schema for trend data point."""
 
-    date: date = Field(..., description="Date of the data point", example="2025-01-27")
-    value: Decimal = Field(..., description="Value for this date", example=2450.00)
+    trend_date: date = Field(..., description="Date of the data point", example="2025-01-27")
+    amount: Decimal = Field(..., description="Value for this date", example=2450.00)
     count: int = Field(..., description="Count for this date", example=18)
     metadata: Optional[Dict[str, Any]] = Field(
         None,

@@ -10,7 +10,9 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.api.dependencies import get_current_user, get_db, get_current_active_superuser
+from backend.app.core.security.rbac import get_current_user, require_role
+from backend.app.db.session import get_db
+from backend.app.db.models.user import User, UserRole
 from backend.app.api.v1.schemas.notifications import (
     # Request schemas
     PreferenceUpdateRequest,
@@ -241,7 +243,7 @@ async def send_notification(
 @router.get("/templates", response_model=TemplateListResponse)
 async def get_notification_templates(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     event_type: Optional[NotificationEventTypeEnum] = Query(None, description="Filter by event type"),
     channel: Optional[NotificationChannelEnum] = Query(None, description="Filter by channel"),
     locale: Optional[str] = Query("pt_BR", description="Filter by locale"),
@@ -276,7 +278,7 @@ async def get_notification_templates(
 async def create_notification_template(
     request: NotificationTemplateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     """
     Create a new notification template (admin only).
@@ -313,7 +315,7 @@ async def update_notification_template(
     template_id: int,
     request: NotificationTemplateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     """
     Update an existing notification template (admin only).
@@ -348,7 +350,7 @@ async def update_notification_template(
 async def delete_notification_template(
     template_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     """
     Delete a notification template (admin only).
@@ -373,7 +375,7 @@ async def delete_notification_template(
 @router.get("/queue", response_model=List[NotificationQueueResponse])
 async def get_notification_queue(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     limit: int = Query(100, ge=1, le=500, description="Maximum items to return"),
     status: Optional[NotificationStatusEnum] = Query(None, description="Filter by status"),
     priority: Optional[str] = Query(None, description="Filter by priority"),
@@ -400,7 +402,7 @@ async def get_notification_queue(
 @router.post("/queue/process")
 async def process_notification_queue(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     limit: int = Query(50, ge=1, le=200, description="Maximum notifications to process"),
 ):
     """
@@ -427,7 +429,7 @@ async def process_notification_queue(
 @router.get("/statistics", response_model=NotificationStatisticsResponse)
 async def get_notification_statistics(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     start_date: Optional[datetime] = Query(None, description="Statistics start date"),
     end_date: Optional[datetime] = Query(None, description="Statistics end date"),
 ):

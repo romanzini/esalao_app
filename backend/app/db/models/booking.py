@@ -69,6 +69,14 @@ class Booking(Base, IDMixin, TimestampMixin):
         comment="Cancellation policy applied to this booking",
     )
 
+    # Multi-service booking relationship (optional)
+    multi_service_booking_id: Mapped[int | None] = mapped_column(
+        ForeignKey("multi_service_bookings.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+        comment="Multi-service booking this individual booking belongs to",
+    )
+
     # Scheduling
     scheduled_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -185,6 +193,15 @@ class Booking(Base, IDMixin, TimestampMixin):
     payments: Mapped[list["Payment"]] = relationship(
         back_populates="booking",
         lazy="selectin",
+    )
+    multi_service_booking: Mapped["MultiServiceBooking | None"] = relationship(
+        back_populates="individual_bookings",
+        lazy="selectin",
+    )
+    review: Mapped["Review | None"] = relationship(
+        back_populates="booking",
+        lazy="selectin",
+        uselist=False,
     )
 
     def __repr__(self) -> str:

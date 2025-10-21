@@ -91,12 +91,18 @@ class Service(Base, IDMixin, TimestampMixin):
     #     back_populates="service",
     #     lazy="selectin",
     # )
-    
+
     # Overbooking configurations for this service
     overbooking_configs: Mapped[list["OverbookingConfig"]] = relationship(
         "OverbookingConfig",
         back_populates="service",
         lazy="select"
+    )
+
+    # Reviews for this service
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="service",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

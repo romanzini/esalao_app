@@ -113,6 +113,12 @@ class Salon(Base, IDMixin, TimestampMixin):
         lazy="select"
     )
 
+    # Reviews for this salon
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="salon",
+        lazy="selectin",
+    )
+
     def __repr__(self) -> str:
         """String representation of Salon."""
         return f"<Salon(id={self.id}, name='{self.name}', cnpj='{self.cnpj}')>"

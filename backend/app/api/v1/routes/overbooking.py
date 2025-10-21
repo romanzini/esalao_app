@@ -44,7 +44,7 @@ router = APIRouter(prefix="/overbooking", tags=["📈 Overbooking Management"])
     **Configuration Scopes:**
     - **Global**: Platform-wide default settings
     - **Salon**: Salon-specific settings
-    - **Professional**: Professional-specific settings  
+    - **Professional**: Professional-specific settings
     - **Service**: Service-specific settings
 
     **Business Rules:**
@@ -73,7 +73,7 @@ async def create_overbooking_config(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Salon owners cannot create global configurations"
             )
-        
+
         # TODO: Validate salon ownership for salon-scoped configs
         # if config_data.scope == OverbookingScope.SALON and config_data.salon_id != current_user.salon_id:
         #     raise HTTPException(
@@ -84,12 +84,12 @@ async def create_overbooking_config(
     try:
         overbooking_service = OverbookingService(session)
         config = await overbooking_service.create_configuration(config_data.dict())
-        
+
         logger.info(
             f"Overbooking configuration created by user {current_user.id}: "
             f"{config.name} (scope: {config.scope.value})"
         )
-        
+
         return config
 
     except ValueError as e:
@@ -129,7 +129,7 @@ async def list_overbooking_configs(
 ):
     """List overbooking configurations."""
     overbooking_service = OverbookingService(session)
-    
+
     if scope:
         configs = await overbooking_service.overbooking_repo.list_by_scope(
             scope=scope,
@@ -166,7 +166,7 @@ async def get_overbooking_config(
     """Get overbooking configuration by ID."""
     overbooking_service = OverbookingService(session)
     config = await overbooking_service.overbooking_repo.get_by_id(config_id)
-    
+
     if not config:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -190,7 +190,7 @@ async def update_overbooking_config(
 ):
     """Update overbooking configuration."""
     overbooking_service = OverbookingService(session)
-    
+
     # Get existing config
     config = await overbooking_service.overbooking_repo.get_by_id(config_id)
     if not config:
@@ -205,7 +205,7 @@ async def update_overbooking_config(
             config_id, update_data.dict(exclude_unset=True)
         )
         await session.commit()
-        
+
         logger.info(f"Overbooking configuration {config_id} updated by user {current_user.id}")
         return updated_config
 
@@ -230,7 +230,7 @@ async def delete_overbooking_config(
 ):
     """Delete overbooking configuration."""
     overbooking_service = OverbookingService(session)
-    
+
     success = await overbooking_service.overbooking_repo.delete(config_id)
     if not success:
         raise HTTPException(
@@ -269,7 +269,7 @@ async def check_booking_capacity(
     """Check booking capacity with overbooking considerations."""
     try:
         overbooking_service = OverbookingService(session)
-        
+
         can_accept, capacity_info = await overbooking_service.can_accept_booking(
             professional_id=request.professional_id,
             target_datetime=request.target_datetime,
@@ -312,7 +312,7 @@ async def get_overbooking_status(
     """Get overbooking status for a date."""
     try:
         target_date = datetime.strptime(request.target_date, "%Y-%m-%d").date()
-        
+
         overbooking_service = OverbookingService(session)
         status_info = await overbooking_service.get_overbooking_status(
             professional_id=request.professional_id,
@@ -361,10 +361,10 @@ async def get_overbooking_analytics(
 ):
     """Get overbooking analytics for a professional."""
     # TODO: Add permission check for professional access
-    
+
     try:
         overbooking_service = OverbookingService(session)
-        
+
         # Get no-show statistics
         no_show_stats = await overbooking_service._get_no_show_statistics(
             professional_id=professional_id,

@@ -114,12 +114,12 @@ class PreferenceUpdateRequest(BaseModel):
     )
     quiet_hours_start: Optional[str] = Field(
         None,
-        regex=r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$',
+        pattern=r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$',
         description="Start time for quiet hours (HH:MM format)"
     )
     quiet_hours_end: Optional[str] = Field(
         None,
-        regex=r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$',
+        pattern=r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$',
         description="End time for quiet hours (HH:MM format)"
     )
 
@@ -202,7 +202,7 @@ class NotificationTemplateRequest(BaseModel):
     )
     locale: str = Field(
         "pt_BR",
-        regex=r'^[a-z]{2}_[A-Z]{2}$',
+        pattern=r'^[a-z]{2}_[A-Z]{2}$',
         description="Language/locale for this template"
     )
 

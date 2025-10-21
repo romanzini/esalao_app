@@ -10,7 +10,7 @@ from backend.app.db.models.overbooking import OverbookingScope, OverbookingTimef
 
 class OverbookingConfigBase(BaseModel):
     """Base schema for overbooking configuration."""
-    
+
     name: str = Field(..., min_length=1, max_length=100, description="Configuration name")
     description: Optional[str] = Field(None, max_length=500, description="Configuration description")
     scope: OverbookingScope = Field(..., description="Configuration scope")
@@ -53,7 +53,7 @@ class OverbookingConfigBase(BaseModel):
 
 class OverbookingConfigCreate(OverbookingConfigBase):
     """Schema for creating overbooking configuration."""
-    
+
     salon_id: Optional[int] = Field(None, description="Salon ID (required for salon scope)")
     professional_id: Optional[int] = Field(None, description="Professional ID (required for professional scope)")
     service_id: Optional[int] = Field(None, description="Service ID (required for service scope)")
@@ -91,7 +91,7 @@ class OverbookingConfigCreate(OverbookingConfigBase):
 
 class OverbookingConfigUpdate(BaseModel):
     """Schema for updating overbooking configuration."""
-    
+
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     max_overbooking_percentage: Optional[float] = Field(None, ge=0, le=100)
@@ -109,7 +109,7 @@ class OverbookingConfigUpdate(BaseModel):
 
 class OverbookingConfigResponse(OverbookingConfigBase):
     """Schema for overbooking configuration response."""
-    
+
     id: int
     salon_id: Optional[int] = None
     professional_id: Optional[int] = None
@@ -123,7 +123,7 @@ class OverbookingConfigResponse(OverbookingConfigBase):
 
 class CapacityInfo(BaseModel):
     """Schema for capacity information."""
-    
+
     base_capacity: int = Field(..., description="Base capacity without overbooking")
     overbooking_enabled: bool = Field(..., description="Whether overbooking is enabled")
     max_capacity: int = Field(..., description="Maximum capacity including overbooking")
@@ -137,7 +137,7 @@ class CapacityInfo(BaseModel):
 
 class CapacityCheckRequest(BaseModel):
     """Request schema for capacity check."""
-    
+
     professional_id: int = Field(..., description="Professional ID")
     target_datetime: datetime = Field(..., description="Target datetime for booking")
     service_duration_minutes: int = Field(..., gt=0, description="Service duration in minutes")
@@ -148,14 +148,14 @@ class CapacityCheckRequest(BaseModel):
 
 class CapacityCheckResponse(BaseModel):
     """Response schema for capacity check."""
-    
+
     can_accept_booking: bool = Field(..., description="Whether booking can be accepted")
     capacity_info: CapacityInfo = Field(..., description="Detailed capacity information")
 
 
 class OverbookingStatusRequest(BaseModel):
     """Request schema for overbooking status."""
-    
+
     professional_id: int = Field(..., description="Professional ID")
     target_date: str = Field(..., description="Target date (YYYY-MM-DD)")
     salon_id: Optional[int] = Field(None, description="Salon ID")
@@ -164,7 +164,7 @@ class OverbookingStatusRequest(BaseModel):
 
 class OverbookingStatusResponse(BaseModel):
     """Response schema for overbooking status."""
-    
+
     date: str = Field(..., description="Target date")
     professional_id: int = Field(..., description="Professional ID")
     overbooking_enabled: bool = Field(..., description="Whether overbooking is enabled")
@@ -176,7 +176,7 @@ class OverbookingStatusResponse(BaseModel):
 
 class NoShowStatistics(BaseModel):
     """Schema for no-show statistics."""
-    
+
     total_bookings: int = Field(..., description="Total bookings in period")
     no_show_bookings: int = Field(..., description="Number of no-show bookings")
     no_show_rate: float = Field(..., description="No-show rate percentage")
@@ -186,7 +186,7 @@ class NoShowStatistics(BaseModel):
 
 class OverbookingAnalyticsResponse(BaseModel):
     """Response schema for overbooking analytics."""
-    
+
     professional_id: int
     salon_id: Optional[int] = None
     service_id: Optional[int] = None

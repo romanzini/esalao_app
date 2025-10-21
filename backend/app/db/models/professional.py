@@ -82,11 +82,17 @@ class Professional(Base, IDMixin, TimestampMixin):
     salon: Mapped["Salon"] = relationship(
         lazy="selectin",
     )
-    
+
     # Overbooking configurations for this professional
     overbooking_configs: Mapped[list["OverbookingConfig"]] = relationship(
         "OverbookingConfig",
         back_populates="professional",
+        lazy="select"
+    )
+
+    # Multi-service bookings where this professional is primary
+    multi_service_bookings: Mapped[list["MultiServiceBooking"]] = relationship(
+        back_populates="primary_professional",
         lazy="select"
     )
 

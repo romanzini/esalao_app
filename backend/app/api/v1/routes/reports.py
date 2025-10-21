@@ -115,7 +115,7 @@ async def get_dashboard_metrics(
         description="Salon ID (required for non-admin users)"
     ),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> DashboardMetrics:
@@ -234,7 +234,7 @@ async def get_booking_metrics(
     professional_id: Optional[int] = Query(None, description="Filter by professional"),
     service_id: Optional[int] = Query(None, description="Filter by service"),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> BookingMetrics:
@@ -338,7 +338,7 @@ async def get_professional_metrics(
     salon_id: Optional[int] = Query(None, description="Filter by salon"),
     limit: int = Query(10, ge=1, le=100, description="Maximum number of professionals"),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> List[ProfessionalMetrics]:
@@ -445,7 +445,7 @@ async def get_service_metrics(
     category: Optional[str] = Query(None, description="Filter by service category"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of services"),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> List[ServiceMetrics]:
@@ -539,7 +539,7 @@ async def get_revenue_trend(
     salon_id: Optional[int] = Query(None, description="Filter by salon"),
     aggregation: str = Query("daily", description="Aggregation level: daily, weekly, monthly"),
     current_user: dict = Depends(
-        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])
+        require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])
     ),
     db: AsyncSession = Depends(get_db),
 ) -> dict:

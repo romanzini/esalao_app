@@ -34,7 +34,7 @@ class OverbookingService:
     ) -> Dict:
         """
         Calculate available capacity considering overbooking rules.
-        
+
         Args:
             professional_id: Professional ID
             target_datetime: Target datetime for booking
@@ -42,7 +42,7 @@ class OverbookingService:
             salon_id: Salon ID for configuration lookup
             service_id: Service ID for configuration lookup
             base_capacity: Base capacity without overbooking
-            
+
         Returns:
             Dictionary with capacity information
         """
@@ -158,7 +158,7 @@ class OverbookingService:
     ) -> Tuple[bool, Dict]:
         """
         Check if a booking can be accepted considering overbooking.
-        
+
         Returns:
             Tuple of (can_accept, capacity_info)
         """
@@ -171,7 +171,7 @@ class OverbookingService:
         )
 
         can_accept = capacity_info["available_slots"] > 0
-        
+
         return can_accept, capacity_info
 
     async def _count_current_bookings(
@@ -183,7 +183,7 @@ class OverbookingService:
         """Count current bookings that overlap with the target slot."""
         # Calculate slot end time
         slot_end = target_datetime + timedelta(minutes=service_duration_minutes)
-        
+
         # Get bookings that overlap with this time slot
         overlapping_bookings = await self.booking_repo.find_overlapping_bookings(
             professional_id=professional_id,
@@ -191,7 +191,7 @@ class OverbookingService:
             end_time=slot_end,
             exclude_statuses=[BookingStatus.CANCELLED, BookingStatus.NO_SHOW]
         )
-        
+
         return len(overlapping_bookings)
 
     async def _get_no_show_statistics(
@@ -277,11 +277,11 @@ class OverbookingService:
         """Create a new overbooking configuration."""
         # Validate configuration
         await self._validate_configuration(config_data)
-        
+
         # Create configuration
         config = await self.overbooking_repo.create(config_data)
         await self.session.commit()
-        
+
         logger.info(f"Created overbooking configuration: {config.name} (ID: {config.id})")
         return config
 
@@ -295,7 +295,7 @@ class OverbookingService:
             professional_id=config_data.get("professional_id"),
             service_id=config_data.get("service_id")
         )
-        
+
         if conflicts:
             raise ValueError(f"Conflicting overbooking configuration already exists for scope {scope}")
 
@@ -307,6 +307,6 @@ class OverbookingService:
         # Validate no-show rate thresholds
         min_rate = config_data.get("min_no_show_rate", 0)
         max_rate = config_data.get("max_no_show_rate", 100)
-        
+
         if min_rate >= max_rate:
             raise ValueError("Minimum no-show rate must be less than maximum no-show rate")

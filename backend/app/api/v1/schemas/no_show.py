@@ -6,7 +6,7 @@ OpenAPI documentation of no-show detection endpoints.
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 
 from pydantic import BaseModel, Field
 

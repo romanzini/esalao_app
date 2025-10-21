@@ -36,7 +36,7 @@ class CancellationTierRequest(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=100, description="Tier name")
     advance_notice_hours: int = Field(..., ge=0, description="Required advance notice in hours")
-    fee_type: str = Field(..., regex="^(percentage|fixed)$", description="Fee type: percentage or fixed")
+    fee_type: str = Field(..., pattern="^(percentage|fixed)$", description="Fee type: percentage or fixed")
     fee_value: Decimal = Field(..., ge=0, description="Fee value (percentage 0-100 or fixed amount)")
     allows_refund: bool = Field(True, description="Whether refund is allowed")
     display_order: int = Field(..., ge=0, description="Display order for UI")
@@ -238,7 +238,7 @@ async def list_policies(
     is_default: Optional[bool] = Query(None, description="Filter by default status"),
     skip: int = Query(0, ge=0, description="Number of policies to skip"),
     limit: int = Query(100, ge=1, le=1000, description="Number of policies to return"),
-    current_user: dict = Depends(require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])),
+    current_user: dict = Depends(require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])),
     db: AsyncSession = Depends(get_db),
 ) -> List[CancellationPolicyListResponse]:
     """
@@ -284,7 +284,7 @@ async def list_policies(
 )
 async def get_policy(
     policy_id: int,
-    current_user: dict = Depends(require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.RECEPTIONIST])),
+    current_user: dict = Depends(require_role([UserRole.ADMIN, UserRole.SALON_OWNER, UserRole.SALON_OWNER])),
     db: AsyncSession = Depends(get_db),
 ) -> CancellationPolicyResponse:
     """
